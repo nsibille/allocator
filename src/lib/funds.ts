@@ -64,11 +64,29 @@ export function floorToTicket(amount: number, fund: Fund): number {
   return Math.max(0, Math.floor(amount / step) * step);
 }
 
-/** Gamme active, triée par sort_order. */
+/**
+ * Coerce les champs numériques d'un fonds en `number`. Les types générés annoncent
+ * `number`, mais on se prémunit contre tout `numeric` renvoyé en chaîne selon le driver.
+ */
+export function normalizeFund(fund: Fund): Fund {
+  const num = (v: unknown, fallback = 0) =>
+    v == null ? fallback : Number(v);
+  return {
+    ...fund,
+    min_ticket: num(fund.min_ticket, 100000),
+    target_multiple: num(fund.target_multiple),
+    target_gross_irr: num(fund.target_gross_irr),
+    esg_score: fund.esg_score == null ? fund.esg_score : num(fund.esg_score),
+    risk_score: fund.risk_score == null ? fund.risk_score : num(fund.risk_score),
+    sort_order: num(fund.sort_order),
+  };
+}
+
+/** Gamme active, normalisée et triée par sort_order. */
 export function activeFunds(funds: Fund[]): Fund[] {
   return funds
     .filter((f) => f.is_active)
-    .slice()
+    .map(normalizeFund)
     .sort((a, b) => a.sort_order - b.sort_order);
 }
 
