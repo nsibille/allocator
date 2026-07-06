@@ -266,6 +266,13 @@ export function AllocationEditor(props: AllocationEditorProps) {
                 <span>Générer les bulletins</span>
                 <DoubleChevron />
               </a>
+              <a
+                href={`/allocations/${allocationId}/souscriptions`}
+                className="mt-1 inline-flex items-center gap-1.5 text-[13px] text-coral transition-opacity hover:opacity-70"
+              >
+                <span>Suivi des souscriptions</span>
+                <DoubleChevron />
+              </a>
             </div>
           </aside>
         </section>
