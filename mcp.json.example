@@ -1,0 +1,13 @@
+{
+  "//": "Copier en .mcp.json localement — NE JAMAIS committer .mcp.json.",
+  "//_method": "Méthode recommandée : claude mcp add --transport http supabase https://mcp.supabase.com/mcp?project_ref=hphdxmqcdscpacbkcdpt  (OAuth, aucun PAT à gérer). Ce fichier n'est utile que pour un setup manuel par PAT.",
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=hphdxmqcdscpacbkcdpt",
+      "headers": {
+        "Authorization": "Bearer TON_PAT_SUPABASE"
+      }
+    }
+  }
+}
