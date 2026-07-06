@@ -62,6 +62,7 @@ export function JCurveChart({ rows }: { rows: ProjectionRow[] }) {
             strokeWidth={2}
             fill="url(#jcurve-fill)"
             dot={false}
+            isAnimationActive={false}
           />
         </AreaChart>
       </ResponsiveContainer>

@@ -53,7 +53,7 @@ export function AppHeader({
         <div className="flex items-center gap-5">
           <span
             className={[
-              "text-[12px] tracking-[0.06em]",
+              "hidden text-[12px] tracking-[0.06em] sm:inline",
               isDark ? "text-mist" : "text-muted",
             ].join(" ")}
           >
@@ -62,6 +62,19 @@ export function AppHeader({
           </span>
           {action}
         </div>
+      </PageShell>
+
+      {/* Nav mobile (repli sous md) */}
+      <PageShell className="flex gap-6 overflow-x-auto pb-3 md:hidden">
+        {nav.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="whitespace-nowrap text-[13px] uppercase tracking-[0.06em] transition-opacity hover:opacity-70"
+          >
+            {item.label}
+          </Link>
+        ))}
       </PageShell>
     </header>
   );

@@ -49,14 +49,15 @@ export function CashflowChart({ rows }: { rows: ProjectionRow[] }) {
             width={44}
           />
           <Tooltip content={<ChartTooltip />} cursor={{ fill: colors["coral-wash"] }} />
-          <Bar dataKey="Appels" fill={colors.muted} radius={[2, 2, 0, 0]} stackId="cf" />
-          <Bar dataKey="Distributions" fill={colors.teal} radius={[2, 2, 0, 0]} stackId="cf" />
+          <Bar dataKey="Appels" fill={colors.muted} radius={[2, 2, 0, 0]} stackId="cf" isAnimationActive={false} />
+          <Bar dataKey="Distributions" fill={colors.teal} radius={[2, 2, 0, 0]} stackId="cf" isAnimationActive={false} />
           <Line
             dataKey="VL"
             type="monotone"
             stroke={colors.coral}
             strokeWidth={2}
             dot={false}
+            isAnimationActive={false}
           />
         </ComposedChart>
       </ResponsiveContainer>
