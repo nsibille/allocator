@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   Private Corner — tokens (source de vérité : design_handoff_private_corner)
+   Tailwind v4 : les tokens @theme génèrent les utilitaires (bg-coral, text-slate…).
+   Zéro hex hardcodé dans les composants — tout passe par ces variables.
+   ========================================================================= */
+@theme {
+  /* Accent unique */
+  --color-coral:       #FB4D58;
+  --color-coral-deep:  #E23C48;
+  --color-coral-wash:  rgba(251, 77, 88, 0.14);
+
+  /* Socle sombre */
+  --color-ink:   #131E23;   /* fond le plus sombre */
+  --color-base:  #16232A;   /* fond de page sombre par défaut */
+  --color-teal:  #33454C;   /* surfaces / cartes sur sombre */
+
+  /* Sections claires */
+  --color-cream:   #ECEBE7;
+  --color-cream-2: #E3E2DD;
+
+  /* Texte */
+  --color-slate:      #3A4D56;  /* texte principal sur clair ; texte sur corail */
+  --color-slate-deep: #2A373D;  /* texte renforcé sur corail, guillemets */
+  --color-white:      #F4F5F3;  /* texte principal sur sombre (blanc cassé) */
+  --color-mist:       #A9B4B9;  /* texte secondaire sur sombre */
+  --color-muted:      #6E7C82;  /* texte tertiaire, labels, légendes */
+
+  /* Lignes (sur fond sombre) */
+  --color-line:   rgba(255, 255, 255, 0.14);
+  --color-line-2: rgba(255, 255, 255, 0.07);
+
+  /* Surfaces neutres complémentaires (badges désactivés / neutres) */
+  --color-surface-disabled: #1E2E36;
+
+  /* Poches d'allocation (data-viz) — §2.b */
+  --color-bucket-defensif:   #6E7C82;  /* muted */
+  --color-bucket-coeur:      #33454C;  /* teal */
+  --color-bucket-croissance: #FB4D58;  /* coral */
+  --color-bucket-satellite:  #E23C48;  /* coral-deep */
+
+  /* Typographie */
+  --font-sans:   "Neue Montreal", var(--font-hanken), "Hanken Grotesk", sans-serif;
+  --font-accent: "Saol Display", var(--font-newsreader), "Newsreader", Georgia, serif;
+
+  /* Rayons (utilitaires Tailwind : rounded-card / rounded-field / rounded-glass / rounded-pill) */
+  --radius:        18px;   /* cartes / surfaces (référence handoff) */
+  --radius-card:   18px;   /* cartes / surfaces */
+  --radius-field:  12px;   /* champs de formulaire */
+  --radius-glass:  26px;   /* carte verre du hero */
+  --radius-pill:   999px;  /* boutons, badges, chips */
+
+  /* Grille & espacement (base 4 : 4·8·16·24·40·64·96) */
+  --container:  1160px;
+  --gutter:     24px;
+  --margin-x:   40px;
+
+  /* Hero gradient */
+  --hero-gradient: linear-gradient(140deg, #3B4D55 0%, #1B2A31 55%, #0E171C 100%);
+}
+
+/* ---- Base ---------------------------------------------------------------- */
+:root {
+  color-scheme: dark;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  letter-spacing: 0.1px;
+  background: var(--color-base);
+  color: var(--color-white);
+}
+
+/* Saol Display — italique 400, mots-clés de titre uniquement (signature marque) */
+em.pc {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Focus clavier — anneau corail obligatoire (accessibilité) */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-coral);
+  outline-offset: 2px;
+}
+
+/* Réduction de mouvement */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
