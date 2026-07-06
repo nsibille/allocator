@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PageShell } from "@/components/layout/PageShell";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Stat } from "@/components/ui/Stat";
-import { Button } from "@/components/ui/Button";
+import { DoubleChevron } from "@/components/ui/DoubleChevron";
 import { FundRow } from "./FundRow";
 import { FundPicker } from "./FundPicker";
 import { TotalIndicator } from "./TotalIndicator";
@@ -247,13 +247,26 @@ export function AllocationEditor(props: AllocationEditorProps) {
             <TotalIndicator total={total} envelope={envelope} />
             <BucketDonut amounts={amounts} fundsById={fundsById} />
             <VintageTimeline amounts={amounts} fundsById={fundsById} />
-            <Button
-              variant="secondary"
-              hideChevron
-              className="!text-slate !border-black/20 hover:!border-coral"
-            >
-              Exporter la note (PDF)
-            </Button>
+            <div className="flex flex-col gap-2.5">
+              <a
+                href={`/api/pdf/proposal/${allocationId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2.5 rounded-pill bg-coral px-7 py-[15px] text-[15px] font-medium text-white transition-colors hover:bg-coral-deep"
+              >
+                <span>Exporter la note (PDF)</span>
+                <DoubleChevron />
+              </a>
+              <a
+                href={`/api/pdf/bulletins/${allocationId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2.5 rounded-pill border border-black/20 px-7 py-[15px] text-[15px] font-medium text-slate transition-colors hover:border-coral hover:text-coral"
+              >
+                <span>Générer les bulletins</span>
+                <DoubleChevron />
+              </a>
+            </div>
           </aside>
         </section>
 
