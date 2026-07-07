@@ -51,7 +51,7 @@ export function FundCard({ fund }: { fund: Fund }) {
             as="h3"
             title={fund.name}
             accentWord={accentWordFor(fund.name)}
-            className="mt-2 text-[21px] font-medium leading-[26px] tracking-[-0.01em] transition-colors group-hover:text-coral"
+            className="mt-2 min-h-[52px] text-[21px] font-medium leading-[26px] tracking-[-0.01em] transition-colors group-hover:text-coral"
           />
         </Link>
         <p className="mt-1.5 text-[13px] text-muted">{fund.manager}</p>
@@ -69,7 +69,7 @@ export function FundCard({ fund }: { fund: Fund }) {
           ))}
         </dl>
 
-        <div className="mt-6 flex items-center gap-4">
+        <div className="mt-auto flex items-center gap-4 pt-6">
           <Link
             href={`/fonds/${fund.slug}`}
             className="inline-flex flex-1 items-center justify-center gap-2.5 rounded-pill bg-coral px-5 py-3 text-[14px] font-medium text-white transition-colors hover:bg-coral-deep"
@@ -115,13 +115,15 @@ export function NewFundCard({ fund }: { fund: NewFund }) {
             as="h3"
             title={fund.name}
             accentWord={fund.accentWord}
-            className="mt-2 text-[21px] font-medium leading-[26px] tracking-[-0.01em] transition-colors group-hover:text-coral"
+            className="mt-2 min-h-[52px] text-[21px] font-medium leading-[26px] tracking-[-0.01em] transition-colors group-hover:text-coral"
           />
         </Link>
-        <p className="mt-2 text-[14px] leading-[21px] text-muted">{fund.tagline}</p>
+        <p className="mt-2 min-h-[42px] text-[14px] leading-[21px] text-muted">
+          {fund.tagline}
+        </p>
         <p className="mt-3 text-[13px] font-medium text-slate">{fund.expectedClosing}</p>
 
-        <div className="mt-6 flex flex-col gap-2.5">
+        <div className="mt-auto flex flex-col gap-2.5 pt-6">
           <Link
             href={`/fonds/${fund.slug}?intent=infos`}
             className="inline-flex items-center justify-center gap-2.5 rounded-pill bg-coral px-5 py-3 text-[14px] font-medium text-white transition-colors hover:bg-coral-deep"
