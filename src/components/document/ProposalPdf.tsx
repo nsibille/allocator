@@ -6,7 +6,9 @@ import {
   View,
 } from "@react-pdf/renderer";
 import { PDF, AMF_AGREMENT } from "@/lib/pdf/theme";
-import { BUCKET_LABEL, PACING_LABEL } from "@/lib/funds";
+import { assetClassFor, fundFacts } from "@/lib/catalog";
+import { getTransparence, type ExposureSlice } from "@/lib/fonds/transparence";
+import { consolidateFromPairs } from "@/lib/allocation/exposure";
 import { pdfEuro, pdfMultiple, pdfPercent } from "@/lib/pdf/format";
 import type { ProposalData } from "@/lib/pdf/data";
 
@@ -43,7 +45,37 @@ const s = StyleSheet.create({
   para: { fontSize: 9.5, lineHeight: 1.5, color: PDF.slate, marginBottom: 7 },
   mentions: { marginTop: 20, paddingTop: 12, borderTopWidth: 1, borderTopColor: PDF.line, fontSize: 7.5, lineHeight: 1.4, color: PDF.muted },
   footer: { position: "absolute", bottom: 20, left: 40, right: 40, flexDirection: "row", justifyContent: "space-between", fontSize: 7, color: PDF.muted },
+  expoRow: { flexDirection: "row", gap: 28, marginTop: 6 },
+  expoCol: { flexGrow: 1, width: "50%" },
+  expoAxis: { fontSize: 8, letterSpacing: 1, color: PDF.muted, textTransform: "uppercase", marginBottom: 6 },
+  expoItem: { marginBottom: 5 },
+  expoLine: { flexDirection: "row", justifyContent: "space-between", marginBottom: 2 },
+  expoLabel: { fontSize: 8.5, color: PDF.slate },
+  expoPct: { fontSize: 8, color: PDF.muted },
+  expoTrack: { height: 3, backgroundColor: PDF.line, borderRadius: 2 },
+  expoFill: { height: 3, backgroundColor: PDF.coral, borderRadius: 2 },
 });
+
+/** Colonne d'un axe d'exposition (barres) pour la note PDF. */
+function ExpoColumn({ title, slices }: { title: string; slices: ExposureSlice[] }) {
+  const top = [...slices].sort((a, b) => b.weight - a.weight).slice(0, 6);
+  return (
+    <View style={s.expoCol}>
+      <Text style={s.expoAxis}>{title}</Text>
+      {top.map((sl) => (
+        <View style={s.expoItem} key={sl.label}>
+          <View style={s.expoLine}>
+            <Text style={s.expoLabel}>{sl.label}</Text>
+            <Text style={s.expoPct}>{pdfPercent(sl.weight, 0)}</Text>
+          </View>
+          <View style={s.expoTrack}>
+            <View style={[s.expoFill, { width: `${Math.round(sl.weight * 100)}%` }]} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
 
 const SCENARIO_LABEL: Record<string, string> = {
   prudent: "Prudent",
@@ -54,6 +86,7 @@ const SCENARIO_LABEL: Record<string, string> = {
 export function ProposalPdf({ data }: { data: ProposalData }) {
   const { allocation, cabinet, conseiller, client, lines, metrics, narrative } = data;
   const total = lines.reduce((sum, l) => sum + l.amount, 0);
+  const exposure = consolidateFromPairs(lines);
 
   return (
     <Document title={`Note d'allocation — ${allocation.name}`}>
@@ -105,7 +138,7 @@ export function ProposalPdf({ data }: { data: ProposalData }) {
           <Text style={s.h2}>Répartition de l&apos;enveloppe</Text>
           <View style={s.tHead}>
             <Text style={[s.cFund, s.th]}>Compartiment</Text>
-            <Text style={[s.cClass, s.th]}>Poche · classe</Text>
+            <Text style={[s.cClass, s.th]}>Classe · positionnement</Text>
             <Text style={[s.cShare, s.th]}>Part</Text>
             <Text style={[s.cAmount, s.th]}>Montant</Text>
           </View>
@@ -114,12 +147,13 @@ export function ProposalPdf({ data }: { data: ProposalData }) {
               <View style={s.cFund}>
                 <Text style={s.fundName}>{fund.name}</Text>
                 <Text style={s.fundSub}>
-                  {fund.manager} · ticket {pdfEuro(fund.min_ticket)} · closing{" "}
-                  {fund.closing_label}
+                  {fund.manager} ·{" "}
+                  {getTransparence(fund.slug)?.structureType ?? "Feeder"} · ticket{" "}
+                  {pdfEuro(fund.min_ticket)} · closing {fund.closing_label}
                 </Text>
               </View>
               <Text style={[s.cClass]}>
-                {BUCKET_LABEL[fund.bucket]} · {PACING_LABEL[fund.pacing]}
+                {assetClassFor(fund.pacing)} · {fundFacts(fund).positioning}
               </Text>
               <Text style={s.cShare}>
                 {total > 0 ? pdfPercent(amount / total, 0) : "—"}
@@ -139,6 +173,22 @@ export function ProposalPdf({ data }: { data: ProposalData }) {
               {pdfEuro(total)}
             </Text>
           </View>
+
+          {exposure.covered > 0 && (
+            <View wrap={false}>
+              <Text style={[s.h2, { marginTop: 24 }]}>
+                Exposition consolidée (transparisée)
+              </Text>
+              <View style={s.expoRow}>
+                <ExpoColumn title="Géographie" slices={exposure.geography} />
+                <ExpoColumn title="Secteur d'activité" slices={exposure.sector} />
+              </View>
+              <Text style={[s.fundSub, { marginTop: 6 }]}>
+                Vue en transparence pondérée par le capital — donnée illustrative,
+                ne reflète pas les portefeuilles réels des gérants.
+              </Text>
+            </View>
+          )}
 
           <Text style={[s.h2, { marginTop: 24 }]}>Argumentaire</Text>
           {narrative.map((para, i) => (

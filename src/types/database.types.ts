@@ -156,6 +156,60 @@ export type Database = {
         }
         Relationships: []
       }
+      client_assets: {
+        Row: {
+          cabinet_id: string
+          category: string
+          client_id: string
+          created_at: string
+          id: string
+          label: string
+          note: string | null
+          support: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          cabinet_id: string
+          category: string
+          client_id: string
+          created_at?: string
+          id?: string
+          label: string
+          note?: string | null
+          support?: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          cabinet_id?: string
+          category?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          label?: string
+          note?: string | null
+          support?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_assets_cabinet_id_fkey"
+            columns: ["cabinet_id"]
+            isOneToOne: false
+            referencedRelation: "cabinets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_assets_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_documents: {
         Row: {
           cabinet_id: string

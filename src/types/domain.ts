@@ -19,6 +19,8 @@ export type ClientDocumentRow =
   Database["public"]["Tables"]["client_documents"]["Row"];
 export type ClientEventRow =
   Database["public"]["Tables"]["client_events"]["Row"];
+export type ClientAssetRow =
+  Database["public"]["Tables"]["client_assets"]["Row"];
 
 /**
  * Réponses d'un questionnaire de qualification (KYC, adéquation, ESG, fiscalité).

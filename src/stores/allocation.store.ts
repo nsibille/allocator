@@ -19,6 +19,8 @@ export interface AllocationEditState {
     distPace: number;
   }) => void;
   setAmount: (fundId: string, amount: number) => void;
+  /** Remplace l'ensemble des montants (pilotage par cible). */
+  applyAmounts: (amounts: Record<string, number>) => void;
   addFund: (fundId: string, amount: number) => void;
   removeFund: (fundId: string) => void;
   setScenario: (s: Scenario) => void;
@@ -40,6 +42,9 @@ export const useAllocationStore = create<AllocationEditState>((set) => ({
       amounts: { ...s.amounts, [fundId]: Math.max(0, amount) },
       rev: s.rev + 1,
     })),
+
+  applyAmounts: (amounts) =>
+    set((s) => ({ amounts: { ...amounts }, rev: s.rev + 1 })),
 
   addFund: (fundId, amount) =>
     set((s) =>

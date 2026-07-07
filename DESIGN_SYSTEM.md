@@ -212,6 +212,9 @@ Le handoff est pensé pour un site ; voici comment le décliner sur un outil B2B
 | `alloc-vintage-timeline` | Timeline des millésimes | points corail sur emphase |
 | `alloc-fund-picker` | Ajout de fonds | pilules |
 | `alloc-total-indicator` | Total vs enveloppe | écart signalé en corail (pas de rouge/vert) |
+| `alloc-exposure-consolidation` | Exposition consolidée du portefeuille en look-through (géo · secteur · stade), pondérée par le capital, **recalculée en temps réel** à chaque ajustement de la répartition | réutilise `fund-exposure-bars` ; logique `lib/allocation/exposure.ts` ; aussi dans la note PDF |
+| `alloc-exposure-steering` | **Pilotage inverse multi-axes** : active géo / secteur / stade, curseurs de cible par zone, re-répartition en temps réel des fonds pour approcher toutes les cibles (moindres carrés empilés sur le simplexe, `steerMultiAxis`). Affiche cible vs atteint (faisabilité) | ne re-répartit que le panier courant, montants au pas du ticket |
+| `fund-exposure-bars` | Un axe d'exposition en barres horizontales corail (poids décroissant), présentation pure | partagé fiche fonds ↔ éditeur |
 
 ### `proj`
 | Slug | Rôle | Notes |
@@ -240,6 +243,7 @@ Réutilisent `ui-tabs`, `ui-field-*`, `ui-select`, `ui-segmented`, `ui-checkbox`
 | `client-kpi-strip` | Bandeau de synthèse (patrimoine, pistes, souscriptions, complétude qualification) | `ui-stat`, unités corail |
 | `client-questionnaire-form` | Rendu générique d'un questionnaire piloté par la config (`questionnaires.config.ts`) | KYC / adéquation / ESG / fiscalité |
 | `client-documents-checklist` | Checklist documentaire (nom, type, statut) — métadonnées seules | statut en `ui-badge-*` (pas de vert/orange) |
+| `client-patrimoine` | Onglet Patrimoine : avoirs déclarés hors gamme Private Corner (enveloppe × support × valorisation) + synthèse par enveloppe en barres. Ajout / édition / suppression | table `client_assets` (RLS cabinet) ; config `lib/client/patrimoine.config.ts` |
 | `client-leads-list` | Pistes d'investissement du client (allocations/simulations) + CTA « Nouvelle piste » | liens vers `alloc` |
 | `client-activity-timeline` | Timeline relationnelle (CRM data-driven) : fil groupé par jour, rail vertical, pastille icône par catégorie | accent corail réservé aux signaux (souscription/flux) |
 | `client-event-item` | Item de timeline : icône Lucide (trait 1.5, `currentColor`), acteur, heure, pastilles montant/état, corps | pas de couleurs de statut multiples |
@@ -250,6 +254,24 @@ Gamme de promotion (registre clair `cream`) : page catalogue `/fonds`, page comm
 `/fonds/[slug]`, initiation de souscription `/fonds/[slug]/souscrire`. Réutilisent
 `ui-badge-*`, `ui-eyebrow-label`, `ui-title-accent`, `ui-button-*`, `layout-page-shell`.
 Aucun hex : les visuels passent par `fund-cover-illustration` (dégradés = tokens CSS).
+> **Repères factuels officiels** (`lib/catalog.ts`) : chaque fonds est à **100 000 € minimum**
+> et donne accès à un gérant institutionnel. L'**architecture varie** (`structureType`, voir
+> transparisation) : feeder mono-gérant · fonds multi-gérants · fonds secondaire — **pas
+> uniquement du fonds de fonds**. `fundFacts(fund)` expose `assetClass` (Private Equity ·
+> Secondaire · Dette privée · Infrastructure, dérivée du `pacing`), `positioning` (Satellite ·
+> Cœur de portefeuille), `sector` et `geography`. Ces repères s'affichent partout où un fonds
+> est montré (cartes, fiche, souscription, note PDF, ligne d'allocation). Catalogue **groupé
+> par classe d'actif** via `ASSET_CLASS_ORDER`. Le positionnement commercial (2 niveaux) reste
+> distinct de la poche interne d'allocation `fund.bucket` (4 niveaux, moteur + donut). Les
+> objectifs de multiple/TRI ne figurent pas sur la source publique : hypothèses internes de
+> projection, réservées à la fiche commerciale.
+>
+> **Transparisation** (`lib/fonds/transparence.ts`, `fund-composition`) : donnée *illustrative*
+> de composition en look-through par slug — `structureType`, millésime, note de risque (1–5),
+> illiquidité, devise, **sous-jacents** (fonds maîtres / paniers, poids) et **expositions**
+> géographie / secteur / stade normalisées à 100 %. Affichée sur la fiche `/fonds/[slug]` via
+> `fund-composition` (barres corail, aucune lib de graphe). Avertissement méthodologique
+> obligatoire (`TRANSPARENCE_DISCLAIMER`).
 | Slug | Rôle | Notes |
 |---|---|---|
 | `fund-badge-strategy` | Badge stratégie | corail si actif, neutre sinon (pas 4 couleurs de statut) |
@@ -260,6 +282,26 @@ Aucun hex : les visuels passent par `fund-cover-illustration` (dégradés = toke
 | `fund-archive-row` | Ligne d'un fonds clôturé : vignette, millésime, performances réalisées (TVPI/DPI/TRI) | registre neutre |
 | `fund-commercial-page` | Page commerciale `/fonds/[slug]` : bandeau visuel, accroche, points clés, stratégie, documentation, bandeau d'action sombre (CTA souscription) | mention AMF |
 | `fund-subscribe-form` | Initiation de souscription mono-fonds : choix investisseur (client existant / nouveau), montant au pas du ticket, création de la note d'allocation | statut « proposée » |
+| `fund-composition` | Transparisation d'un fonds sur `/fonds/[slug]` : repères d'architecture, sous-jacents (fonds maîtres / paniers), expositions géo/secteur/stade en barres | donnée illustrative, avertissement obligatoire |
+
+### `portal`
+Écrans de gestion back-office du cabinet (registre clair `cream`), accessibles depuis
+`layout-app-header`. Données **de démonstration statiques** (`lib/portal/demo.ts`), aucune
+dépendance base. Réutilisent `layout-page-shell`, `ui-eyebrow-label`, `ui-title-accent`,
+`ui-stat`, `ui-badge-*`, `ui-button-*`. Statuts : ton `active` (corail) / `neutral` (gris)
+uniquement — jamais de vert/orange (règle corail unique).
+> **Investisseur = client.** Terme canonique retenu : **client**. L'entrée de menu
+> « Clients » est la fonctionnalité réelle `client-*` (`/clients`, RLS-scopée) ; pas de
+> page de démo « investisseurs » séparée. « Nouvelle allocation » n'est pas une entrée de
+> menu : elle se lance uniquement depuis la fiche d'un client (`/allocations/new?client=<id>`),
+> y compris depuis le tableau de bord qui renvoie d'abord au choix du client.
+| Slug | Rôle | Notes |
+|---|---|---|
+| `portal-advisors-table` | Page `/conseillers` : conseillers du cabinet (rôle, portefeuille investisseurs, encours, dernier accès, statut) + KPI | CTA « Inviter un conseiller » |
+| `portal-documents-browser` | Page `/documents` : index des dossiers à gauche, liste des pièces à droite (nom, dossier, date, taille) + recherche | métadonnées seules, non téléchargeables |
+| `portal-subscriptions-table` | Page `/souscriptions` : bandeau KPI (engagement, appelé, distribué, NAV) + tableau détaillé (fonds/part, investisseur, montants, statut) | export CSV (démo) |
+| `portal-retrocessions-table` | Page `/retrocessions` : rétrocessions dues (référence, type, statut de facturation, date paiement, montant) + KPI réglé/en attente | droits d'entrée & frais de gestion |
+| `portal-offers-table` | Page `/offres` : offres de distribution groupées par fonds puis par part (ISIN, ticket min, valorisation, frais d'entrée, statut) | mention AMF promotionnelle |
 
 ---
 

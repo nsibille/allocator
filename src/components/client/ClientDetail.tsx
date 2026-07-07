@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { QuestionnaireForm } from "./QuestionnaireForm";
 import { DocumentsChecklist } from "./DocumentsChecklist";
+import { PatrimoineTab } from "./PatrimoineTab";
 import { ClientTimeline } from "./ClientTimeline";
 import { deleteInvestor, setClientStatus } from "@/app/(app)/clients/actions";
 import {
@@ -28,6 +29,7 @@ import { formatEuro } from "@/lib/funds";
 import type {
   AllocationStatus,
   BulletinStatus,
+  ClientAssetRow,
   ClientDocumentRow,
   ClientEventRow,
   ClientRow,
@@ -56,6 +58,7 @@ export type ClientSubscription = {
 type TabKey =
   | "profil"
   | "activite"
+  | "patrimoine"
   | "qualification"
   | "documents"
   | "souscriptions"
@@ -64,6 +67,7 @@ type TabKey =
 const TABS: { key: TabKey; label: string }[] = [
   { key: "profil", label: "Profil" },
   { key: "activite", label: "Activité" },
+  { key: "patrimoine", label: "Patrimoine" },
   { key: "qualification", label: "Qualification" },
   { key: "documents", label: "Documents" },
   { key: "souscriptions", label: "Souscriptions" },
@@ -77,12 +81,14 @@ function asAnswers(json: unknown): QuestionnaireAnswers {
 export function ClientDetail({
   client,
   documents,
+  assets,
   leads,
   subscriptions,
   events,
 }: {
   client: ClientRow;
   documents: ClientDocumentRow[];
+  assets: ClientAssetRow[];
   leads: ClientLead[];
   subscriptions: ClientSubscription[];
   events: ClientEventRow[];
@@ -188,6 +194,9 @@ export function ClientDetail({
         )}
         {tab === "activite" && (
           <ClientTimeline clientId={client.id} events={events} />
+        )}
+        {tab === "patrimoine" && (
+          <PatrimoineTab clientId={client.id} assets={assets} />
         )}
         {tab === "qualification" && (
           <div className="flex flex-col gap-6">

@@ -4,15 +4,18 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
+  assetSchema,
   clientIdentitySchema,
   documentSchema,
   manualEventSchema,
   questionnaireSchema,
+  type AssetInput,
   type ClientIdentityInput,
   type DocumentInput,
   type ManualEventInput,
   type QuestionnaireInput,
 } from "@/lib/client/schema";
+import { categoryLabel, supportLabel } from "@/lib/client/patrimoine.config";
 import { logClientEvent } from "@/lib/client/log-event";
 import { EVENT_TYPES } from "@/lib/client/events.config";
 import { QUESTIONNAIRES } from "@/lib/client/questionnaires.config";
@@ -351,6 +354,97 @@ export async function deleteEvent(
     .delete()
     .eq("id", eventId);
   if (error) return { error: "Échec de la suppression de l'événement." };
+
+  revalidatePath(`/clients/${clientId}`);
+  return { ok: true };
+}
+
+/* ---------------------------------------------------------------- Patrimoine */
+
+/** Ajoute un avoir au patrimoine déclaré de l'investisseur. */
+export async function addAsset(
+  clientId: string,
+  raw: AssetInput,
+): Promise<ActionError | { ok: true }> {
+  const parsed = assetSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Avoir invalide." };
+  }
+  const ctx = await requireCabinet();
+  if (!ctx.ok) return { error: ctx.error };
+  const a = parsed.data;
+
+  const { error } = await ctx.supabase.from("client_assets").insert({
+    client_id: clientId,
+    cabinet_id: ctx.cabinetId,
+    category: a.category,
+    support: a.support,
+    label: a.label,
+    value: a.value,
+    note: a.note,
+  });
+  if (error) return { error: "Échec de l'ajout de l'avoir." };
+
+  await logClientEvent(ctx.supabase, {
+    clientId,
+    cabinetId: ctx.cabinetId,
+    type: "other",
+    title: `Patrimoine — ${a.label}`,
+    data: {
+      kind: "asset_added",
+      category: categoryLabel(a.category),
+      support: supportLabel(a.support),
+      amount: a.value,
+    },
+  });
+
+  revalidatePath(`/clients/${clientId}`);
+  return { ok: true };
+}
+
+/** Met à jour un avoir du patrimoine. */
+export async function updateAsset(
+  clientId: string,
+  assetId: string,
+  raw: AssetInput,
+): Promise<ActionError | { ok: true }> {
+  const parsed = assetSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Avoir invalide." };
+  }
+  const ctx = await requireCabinet();
+  if (!ctx.ok) return { error: ctx.error };
+  const a = parsed.data;
+
+  const { error } = await ctx.supabase
+    .from("client_assets")
+    .update({
+      category: a.category,
+      support: a.support,
+      label: a.label,
+      value: a.value,
+      note: a.note,
+    })
+    .eq("id", assetId);
+  if (error) return { error: "Échec de la mise à jour de l'avoir." };
+
+  revalidatePath(`/clients/${clientId}`);
+  return { ok: true };
+}
+
+/** Supprime un avoir du patrimoine. */
+export async function deleteAsset(
+  clientId: string,
+  assetId: string,
+): Promise<ActionError | { ok: true }> {
+  const ctx = await requireCabinet();
+  if (!ctx.ok) return { error: ctx.error };
+
+  const { error } = await ctx.supabase
+    .from("client_assets")
+    .delete()
+    .eq("id", assetId);
+  if (error) return { error: "Échec de la suppression de l'avoir." };
 
   revalidatePath(`/clients/${clientId}`);
   return { ok: true };

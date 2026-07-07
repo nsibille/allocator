@@ -10,6 +10,8 @@ import { FundPicker } from "./FundPicker";
 import { TotalIndicator } from "./TotalIndicator";
 import { BucketDonut } from "./BucketDonut";
 import { VintageTimeline } from "./VintageTimeline";
+import { ExposureConsolidation } from "./ExposureConsolidation";
+import { ExposureSteering } from "./ExposureSteering";
 import { ScenarioControls } from "@/components/projection/ScenarioControls";
 import { PaceControl } from "@/components/projection/PaceControl";
 import { CashflowChart } from "@/components/projection/CashflowChart";
@@ -17,6 +19,7 @@ import { JCurveChart } from "@/components/projection/JCurveChart";
 import { NarrativePanel } from "@/components/projection/NarrativePanel";
 import { useAllocationStore } from "@/stores/allocation.store";
 import { concentrationCap } from "@/lib/allocation/engine";
+import { consolidateExposures } from "@/lib/allocation/exposure";
 import { projectPortfolio } from "@/lib/projection/engine";
 import { buildNarrative } from "@/lib/narrative/build";
 import { activeFunds, formatEuro, formatMultiple, formatPercent } from "@/lib/funds";
@@ -100,6 +103,12 @@ export function AllocationEditor(props: AllocationEditorProps) {
     [lines, fundsById, scenario, distPace],
   );
   const m = projection.metrics;
+
+  // Exposition consolidée (look-through) recalculée en temps réel.
+  const exposure = useMemo(
+    () => consolidateExposures(lines, fundsById),
+    [lines, fundsById],
+  );
 
   const narrative = useMemo(() => {
     const input: AllocationInput = {
@@ -275,6 +284,16 @@ export function AllocationEditor(props: AllocationEditorProps) {
               </a>
             </div>
           </aside>
+        </section>
+
+        {/* Exposition consolidée (look-through) — temps réel */}
+        <section className="mt-14 grid gap-6 lg:grid-cols-2">
+          <ExposureConsolidation exposure={exposure} />
+          <ExposureSteering
+            lines={lines}
+            fundsById={fundsById}
+            envelope={envelope}
+          />
         </section>
 
         {/* Discours — registre sombre */}

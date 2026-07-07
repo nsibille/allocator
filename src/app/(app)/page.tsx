@@ -37,7 +37,7 @@ export default async function DashboardPage() {
         <h1 className="text-[42px] font-medium leading-[46px] tracking-[-0.01em]">
           Vos <em className="pc">allocations</em>
         </h1>
-        <Link href="/allocations/new">
+        <Link href="/clients">
           <Button>Nouvelle allocation</Button>
         </Link>
       </div>
@@ -58,10 +58,10 @@ export default async function DashboardPage() {
         <EmptyState
           className="mt-10"
           title="Aucune allocation pour l'instant."
-          description="Lancez le funnel de qualification pour composer une première allocation sur la gamme Private Corner."
+          description="Une allocation se compose depuis la fiche d'un client. Sélectionnez un client pour lancer le funnel de qualification sur la gamme Private Corner."
           action={
-            <Link href="/allocations/new">
-              <Button>Démarrer la qualification</Button>
+            <Link href="/clients">
+              <Button>Choisir un client</Button>
             </Link>
           }
         />

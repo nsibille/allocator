@@ -6,6 +6,7 @@ import {
   formatMultiple,
   formatPercent,
 } from "@/lib/funds";
+import { getTransparence } from "@/lib/fonds/transparence";
 
 /* =========================================================================
    Catalogue commercial — pont entre la gamme réelle (table `funds`) et la
@@ -81,154 +82,194 @@ export interface FundCommercial {
   geographies: string;
 }
 
-/** Accroches et pitchs éditorialisés par slug (fallback générique sinon). */
+/**
+ * Accroches et pitchs éditorialisés par slug (fallback générique sinon).
+ * Signature Private Corner : chaque véhicule donne accès, dès 100 000 €, à des
+ * stratégies de gérants institutionnels de premier rang dont les tickets directs
+ * dépassent plusieurs millions d'euros. L'architecture varie selon le fonds
+ * (feeder mono-gérant, fonds multi-gérants ou fonds secondaire) : voir
+ * `lib/fonds/transparence.ts` (`structureType`). `positioning` reprend le
+ * positionnement commercial officiel (Satellite / Cœur de portefeuille), distinct
+ * de la poche interne d'allocation (`fund.bucket`).
+ */
 const COMMERCIAL_COPY: Record<
   string,
-  { tagline: string; pitch: string; strategy: string[]; geographies: string }
+  {
+    tagline: string;
+    pitch: string;
+    strategy: string[];
+    geographies: string;
+    positioning: string;
+    sector: string;
+  }
 > = {
   "merieux-innovation-ii": {
-    tagline: "Accompagner les champions de la santé de demain",
+    tagline: "Le feeder santé d'un spécialiste européen",
     pitch:
-      "Le feeder Mérieux Innovation II donne accès à un portefeuille de sociétés innovantes des sciences de la vie et de la santé numérique, aux côtés d'un gérant de référence du secteur. Une exposition satellite à fort potentiel, pensée pour dynamiser une allocation déjà diversifiée.",
+      "PC Feeder Mérieux Innovation II est un fonds nourricier (feeder) donnant accès, dès 100 000 €, à la stratégie santé de Mérieux Equity Partners — un ticket institutionnel habituellement hors de portée des investisseurs privés. Le fonds accompagne des sociétés matures de la santé (hors biotechs) en Europe. Une poche satellite à forte conviction.",
     strategy: [
-      "Capital innovation et accélération de sociétés en forte croissance",
-      "Secteurs : biotech, medtech, diagnostic, santé numérique",
-      "Co-investissement aux côtés d'entrepreneurs et de fonds spécialisés",
-      "Sélection resserrée pour un couple rendement / conviction élevé",
+      "Feeder d'accès à la stratégie santé de Mérieux Equity Partners",
+      "Sociétés matures de la santé, hors biotechs",
+      "Accélération et transmission de champions européens",
+      "Poche satellite à forte conviction",
     ],
-    geographies: "Europe & Amérique du Nord",
+    geographies: "Europe",
+    positioning: "Satellite",
+    sector: "Santé (hors biotechs)",
   },
   "pc-european-semiconductor": {
-    tagline: "Le cœur industriel du continent européen",
+    tagline: "La souveraineté des semi-conducteurs, gérée par Ardian",
     pitch:
-      "Private Corner Wealth European Semiconductor cible les leaders européens de la chaîne de valeur des semi-conducteurs, un secteur stratégique porté par la souveraineté technologique. Une brique cœur de portefeuille, gérée par Ardian.",
+      "Private Corner Wealth European Semiconductor est un feeder donnant accès, dès 100 000 €, à un buyout d'Ardian sur la chaîne de valeur des semi-conducteurs. Un secteur stratégique porté par la souveraineté technologique, adressé sur trois continents via un seul véhicule.",
     strategy: [
-      "Buyout de sociétés matures de la filière semi-conducteurs",
+      "Feeder d'accès à un buyout Ardian sur les semi-conducteurs",
       "Thèse de souveraineté et de relocalisation industrielle",
+      "Sociétés matures de la filière (conception, équipement, matériaux)",
       "Création de valeur opérationnelle et build-up",
-      "Diversification sectorielle au sein de la poche cœur",
     ],
-    geographies: "Europe (100 %)",
+    geographies: "Europe, Amérique du Nord & Asie",
+    positioning: "Satellite",
+    sector: "Semi-conducteurs",
   },
   "pc-credit-yield": {
-    tagline: "Un rendement régulier, une volatilité maîtrisée",
+    tagline: "Un revenu contractuel, une brique cœur défensive",
     pitch:
-      "Private Corner Credit Yield est une stratégie de dette privée défensive, conçue pour générer un rendement contractuel récurrent avec une faible corrélation aux marchés cotés. La brique de stabilité d'une allocation non cotée.",
+      "Private Corner Credit Yield est un feeder de dette privée donnant accès, dès 100 000 €, aux stratégies de CVC et General Atlantic. Financement direct de sociétés de qualité, revenus contractuels récurrents et faible corrélation aux marchés cotés : la brique cœur de portefeuille d'une allocation non cotée.",
     strategy: [
-      "Financement en dette senior et unitranche de sociétés de qualité",
+      "Feeder de dette privée (CVC & General Atlantic)",
+      "Financement direct de sociétés de qualité (senior / unitranche)",
       "Revenus contractuels et distributions régulières",
-      "Séniorité et covenants protecteurs du capital",
       "Faible corrélation aux marchés actions",
     ],
-    geographies: "Europe & Amérique du Nord",
+    geographies: "Europe & États-Unis",
+    positioning: "Cœur de portefeuille",
+    sector: "Multisectoriel",
   },
   "pc-buyout-eqt": {
-    tagline: "La discipline opérationnelle d'un leader mondial",
+    tagline: "La discipline industrielle d'EQT, en feeder",
     pitch:
-      "Private Corner Buyout EQT Strategy offre un accès à la stratégie phare d'EQT : le rachat de sociétés de croissance de qualité, transformées par une approche industrielle et digitale. Un pilier cœur de portefeuille.",
+      "Private Corner Buyout EQT Strategy est un feeder donnant accès, dès 100 000 €, à la stratégie phare d'EQT : le rachat de sociétés de croissance de qualité, transformées par une approche industrielle et digitale, dans la santé, la technologie et les services.",
     strategy: [
-      "Buyout de sociétés leaders sur des marchés porteurs",
+      "Feeder d'accès à la stratégie buyout d'EQT",
+      "Sociétés leaders : santé, technologie, services",
       "Création de valeur opérationnelle et digitale",
-      "Approche thématique (santé, technologie, transition)",
       "Discipline de valorisation à l'entrée",
     ],
-    geographies: "Europe & Amérique du Nord",
+    geographies: "Europe, États-Unis & Asie",
+    positioning: "Satellite",
+    sector: "Santé, Technologie, Services",
   },
   "pc-keensight-nova-vii": {
-    tagline: "Le growth buyout européen dans sa meilleure expression",
+    tagline: "Le growth buyout européen, en feeder",
     pitch:
-      "Le feeder Keensight Nova VII investit dans des PME et ETI européennes rentables et en forte croissance, sans effet de levier excessif. Une poche croissance au track record éprouvé.",
+      "Le PC Feeder Keensight Nova VII donne accès, dès 100 000 €, à la stratégie de Keensight Capital : des PME et ETI d'Europe de l'Ouest rentables et en forte croissance, dans la technologie et la santé, sans effet de levier excessif.",
     strategy: [
+      "Feeder d'accès à la stratégie Keensight Nova VII",
       "Growth buyout de sociétés rentables et en croissance",
-      "Sociétés du numérique et de la santé principalement",
-      "Accompagnement d'entrepreneurs sur des trajectoires d'hyper-croissance",
+      "Technologie et santé principalement",
       "Effet de levier modéré, création de valeur par la croissance",
     ],
-    geographies: "Europe (majoritaire)",
+    geographies: "Europe de l'Ouest",
+    positioning: "Satellite",
+    sector: "Technologie & Santé",
   },
   "tikehau-decarbonization-ii": {
-    tagline: "Financer la transition, capter la croissance",
+    tagline: "Financer la décarbonation, en feeder",
     pitch:
-      "Le feeder Tikehau Decarbonization Fund II investit dans les sociétés qui accélèrent la décarbonation de l'économie. Une thèse d'impact alignée sur une classification ESG exigeante, sans renoncer à la performance.",
+      "Le feeder Tikehau Decarbonization Fund II donne accès, dès 100 000 €, à la stratégie de décarbonation de Tikehau Capital : des sociétés qui accélèrent la transition bas carbone, avec une thèse d'impact mesurable, en Europe et Amérique du Nord.",
     strategy: [
+      "Feeder d'accès au Tikehau Decarbonization Fund II",
       "Growth buyout sur les acteurs de la décarbonation",
-      "Thèse d'impact mesurable (article SFDR renforcé)",
       "Efficacité énergétique, mobilité bas carbone, énergies propres",
-      "Alignement rendement financier / impact climatique",
+      "Thèse d'impact mesurable",
     ],
     geographies: "Europe & Amérique du Nord",
+    positioning: "Satellite",
+    sector: "Multisectoriel",
   },
   "blue-owl-gp-stakes": {
     tagline: "Investir dans les gérants, pas seulement dans leurs fonds",
     pitch:
-      "Blue Owl GP Stakes Strategy prend des participations minoritaires au capital de sociétés de gestion alternatives établies. Un profil de revenus récurrents et diversifiés, décorrélé du cycle d'un fonds unique.",
+      "Blue Owl GP Stakes Strategy est un feeder donnant accès, dès 100 000 €, à la stratégie GP Stakes de Blue Owl Capital : des participations minoritaires au capital de sociétés de gestion alternatives établies dans le monde entier. Des revenus récurrents et diversifiés, décorrélés du cycle d'un fonds unique : une brique cœur de portefeuille.",
     strategy: [
-      "Participations minoritaires au capital de gérants alternatifs",
+      "Feeder d'accès à la stratégie GP Stakes de Blue Owl Capital",
       "Revenus récurrents (management fees) et upside (carried)",
       "Diversification sur des dizaines de fonds sous-jacents",
       "Profil de rendement défensif et récurrent",
     ],
-    geographies: "Amérique du Nord & Europe",
+    geographies: "Mondiale",
+    positioning: "Cœur de portefeuille",
+    sector: "Capital investissement",
   },
   "pc-secondary-2026": {
     tagline: "Le non coté, sans la courbe en J",
     pitch:
-      "Private Corner Secondary Fund 2026 acquiert des parts de fonds existants sur le marché secondaire, avec une décote et une visibilité accrue sur les actifs sous-jacents. Une entrée en portefeuille plus rapidement génératrice de liquidités.",
+      "Private Corner Secondary Fund 2026 est un fonds secondaire géré par Committed Advisors : l'acquisition, avec décote, de parts de fonds existants (États-Unis & Europe), diversifiées par millésimes et par gérants. Une entrée en portefeuille plus rapidement génératrice de liquidités.",
     strategy: [
-      "Acquisition de parts de fonds matures sur le secondaire",
-      "Décote à l'entrée et atténuation de la courbe en J",
+      "Fonds secondaire (Committed Advisors)",
+      "Acquisition de parts de fonds matures avec décote",
       "Diversification par millésimes et par gérants",
-      "Retour de liquidités plus précoce",
+      "Atténuation de la courbe en J, retour de liquidités précoce",
     ],
-    geographies: "International",
+    geographies: "États-Unis & Europe",
+    positioning: "Cœur de portefeuille",
+    sector: "Multisectoriel",
   },
   "european-midmarket-opportunities": {
-    tagline: "Le mid-market européen, accessible dès 25 000 €",
+    tagline: "Le mid-market européen, multi-gérants",
     pitch:
-      "European MidMarket Opportunities agrège les meilleures signatures du buyout mid-market européen dans un véhicule accessible. Un ticket d'entrée abaissé pour démocratiser une classe d'actif institutionnelle.",
+      "European MidMarket Opportunities est un fonds multi-gérants réunissant, dès 25 000 €, les meilleures signatures du buyout mid-market européen — PAI Partners, Keensight Capital, Eurazeo et General Atlantic — dans un seul véhicule diversifié. Ticket d'entrée abaissé pour une brique cœur de portefeuille clé en main.",
     strategy: [
-      "Buyout mid-market via une sélection de gérants de premier plan",
-      "Diversification multi-gérants et multi-secteurs",
-      "Ticket d'entrée abaissé à 25 000 €",
+      "Fonds multi-gérants du mid-market européen",
+      "PAI Partners, Keensight Capital, Eurazeo, General Atlantic",
+      "Diversification multi-secteurs et multi-millésimes",
       "Cœur de portefeuille non coté",
     ],
     geographies: "Europe",
+    positioning: "Cœur de portefeuille",
+    sector: "Multisectoriel",
   },
   "pc-wealth-buyout-2026": {
-    tagline: "Un millésime buyout clé en main",
+    tagline: "Un millésime buyout Ardian, clé en main",
     pitch:
-      "Private Corner Wealth Buyout 2026 est un programme de buyout diversifié géré par Ardian, pensé comme la brique cœur d'une première allocation au non coté. Simplicité, diversification et discipline.",
+      "Private Corner Wealth Buyout 2026 est un feeder géré par Ardian donnant accès, dès 100 000 €, à un programme de buyout diversifié sur des sociétés matures, en Europe et Amérique du Nord. Simplicité, diversification et discipline.",
     strategy: [
-      "Buyout diversifié sur des sociétés matures",
-      "Sélection et suivi délégués à un gérant de référence",
+      "Feeder buyout diversifié (Ardian)",
+      "Sociétés matures, multi-secteurs",
       "Diversification par secteurs et par zones",
-      "Brique cœur d'une allocation non cotée",
+      "Sélection et suivi délégués à un gérant de référence",
     ],
     geographies: "Europe & Amérique du Nord",
+    positioning: "Satellite",
+    sector: "Multisectoriel",
   },
   "us-midcap-buyout": {
-    tagline: "La profondeur du marché américain",
+    tagline: "Le mid-cap américain, en sélection de gérants",
     pitch:
-      "US MidCap Buyout Strategies expose le portefeuille au segment le plus profond du private equity mondial : le mid-market américain, via une sélection de gérants opérée par Neuberger.",
+      "US MidCap Buyout Strategies est un fonds multi-gérants donnant accès, dès 100 000 €, au segment le plus profond du private equity mondial — le mid-market américain — via une sélection de gérants opérée par Neuberger Berman.",
     strategy: [
+      "Fonds multi-gérants (sélection Neuberger Berman)",
       "Buyout mid-cap aux États-Unis",
-      "Sélection multi-gérants par Neuberger",
       "Diversification sectorielle et géographique",
       "Exposition au dollar et au marché US",
     ],
     geographies: "États-Unis",
+    positioning: "Satellite",
+    sector: "Multisectoriel",
   },
   "meridiam-global-infrastructure": {
     tagline: "Des actifs réels, des flux prévisibles",
     pitch:
-      "Meridiam Global Infrastructure Strategies investit dans des infrastructures essentielles de long terme (mobilité, énergie, services publics). Une poche défensive à faible corrélation, en souscription continue.",
+      "Meridiam Global Infrastructure Strategies est un feeder d'infrastructure core / core+ donnant accès, dès 100 000 €, à la stratégie de Meridiam : des actifs essentiels de long terme (mobilité, solutions bas carbone, services publics). Une poche cœur défensive, en souscription continue.",
     strategy: [
-      "Infrastructure core / core+ de long terme",
-      "Actifs essentiels : mobilité, énergie, services publics",
+      "Feeder d'infrastructure core / core+ (Meridiam)",
+      "Actifs essentiels : mobilité, bas carbone, services publics",
       "Flux de revenus prévisibles et indexés",
-      "Faible corrélation, profil défensif",
+      "Faible corrélation, profil défensif de long terme",
     ],
-    geographies: "International",
+    geographies: "Europe & reste du monde",
+    positioning: "Cœur de portefeuille",
+    sector: "Infrastructure essentielle",
   },
 };
 
@@ -247,9 +288,15 @@ export function buildCommercial(fund: Fund): FundCommercial {
   ];
 
   const highlights: FundCommercial["highlights"] = [
+    { label: "Classe d'actif", value: assetClassFor(fund.pacing) },
     { label: "Stratégie", value: fund.strategy },
     { label: "Gérant", value: fund.manager },
-    { label: "Poche", value: BUCKET_LABEL[fund.bucket] },
+    {
+      label: "Structure",
+      value: getTransparence(fund.slug)?.structureType ?? "Feeder mono-gérant",
+    },
+    { label: "Positionnement", value: copy?.positioning ?? BUCKET_LABEL[fund.bucket] },
+    { label: "Secteur", value: copy?.sector ?? fund.strategy },
     { label: "Géographies", value: geographies },
     { label: "Objectif de multiple", value: `${formatMultiple(fund.target_multiple)} brut` },
     { label: "TRI brut cible", value: formatPercent(fund.target_gross_irr) },
@@ -258,6 +305,52 @@ export function buildCommercial(fund: Fund): FundCommercial {
   ];
 
   return { tagline, pitch, highlights, strategy, geographies };
+}
+
+/* -------------------------------------------------------------------------
+   Repères factuels officiels (source privatecorner.eu/fonds)
+   ------------------------------------------------------------------------- */
+
+/** Classe d'actif affichée en badge sur la source, dérivée du pacing. */
+export type AssetClass =
+  | "Private Equity"
+  | "Secondaire"
+  | "Dette privée"
+  | "Infrastructure";
+
+/** Ordre des sections par classe d'actif (identique à la source). */
+export const ASSET_CLASS_ORDER: AssetClass[] = [
+  "Private Equity",
+  "Secondaire",
+  "Dette privée",
+  "Infrastructure",
+];
+
+/** Déduit la classe d'actif d'un fonds de son profil de pacing. */
+export function assetClassFor(pacing: PacingProfile): AssetClass {
+  if (pacing === "credit") return "Dette privée";
+  if (pacing === "infra") return "Infrastructure";
+  if (pacing === "secondary") return "Secondaire";
+  return "Private Equity";
+}
+
+/** Repères factuels officiels d'un fonds (classe, positionnement, secteur, géo). */
+export interface FundFacts {
+  assetClass: AssetClass;
+  positioning: string;
+  sector: string;
+  geography: string;
+}
+
+/** Extrait les repères factuels d'un fonds (source de vérité : COMMERCIAL_COPY). */
+export function fundFacts(fund: Fund): FundFacts {
+  const copy = COMMERCIAL_COPY[fund.slug];
+  return {
+    assetClass: assetClassFor(fund.pacing),
+    positioning: copy?.positioning ?? BUCKET_LABEL[fund.bucket],
+    sector: copy?.sector ?? fund.strategy,
+    geography: copy?.geographies ?? "International",
+  };
 }
 
 /** Documents de la salle de données (démonstration — non téléchargeables). */

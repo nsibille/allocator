@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Constants } from "@/types/database.types";
+import { CATEGORY_KEYS, SUPPORT_KEYS } from "@/lib/client/patrimoine.config";
 
 /* Validation Zod des formulaires clients (identité) + garde-fous questionnaires. */
 
@@ -118,3 +119,24 @@ export const manualEventSchema = z.object({
 });
 
 export type ManualEventInput = z.input<typeof manualEventSchema>;
+
+/** Un avoir du patrimoine de l'investisseur (enveloppe + support + valeur). */
+export const assetSchema = z.object({
+  category: z
+    .string()
+    .trim()
+    .refine((v) => CATEGORY_KEYS.includes(v), "Enveloppe invalide."),
+  support: z
+    .string()
+    .trim()
+    .refine((v) => SUPPORT_KEYS.includes(v), "Support invalide.")
+    .default("autre"),
+  label: z.string().trim().min(2, "Libellé requis.").max(120),
+  value: z
+    .number({ error: "Valorisation requise." })
+    .nonnegative("Valorisation invalide.")
+    .max(1_000_000_000),
+  note: optionalText,
+});
+
+export type AssetInput = z.input<typeof assetSchema>;

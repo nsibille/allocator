@@ -10,8 +10,9 @@ import {
   type InvestorOption,
 } from "@/components/fund/SubscriptionInitForm";
 import { createClient } from "@/lib/supabase/server";
-import { normalizeFund, formatEuro, formatMultiple, PACING_LABEL } from "@/lib/funds";
-import { openStatus, toneForFund } from "@/lib/catalog";
+import { normalizeFund, formatEuro } from "@/lib/funds";
+import { fundFacts, openStatus, toneForFund } from "@/lib/catalog";
+import { getTransparence } from "@/lib/fonds/transparence";
 import type { Fund } from "@/types/domain";
 
 /**
@@ -37,6 +38,7 @@ export default async function SubscribePage({
   const fund = normalizeFund(fundRow as Fund);
   const status = openStatus(fund);
   const tone = toneForFund(fund.bucket, fund.pacing);
+  const facts = fundFacts(fund);
 
   const { data: clients } = await supabase
     .from("clients")
@@ -71,9 +73,9 @@ export default async function SubscribePage({
           <div className="overflow-hidden rounded-card border border-black/10">
             <FundCover seed={fund.slug} tone={tone} rounded={false} className="h-48 w-full" />
             <div className="p-6">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <p className="text-[11px] uppercase tracking-[0.14em] text-coral">
-                  {PACING_LABEL[fund.pacing]}
+                  {facts.assetClass}
                 </p>
                 <Badge tone={status === "open" ? "active" : "neutral"}>
                   {status === "open" ? "En cours de levée" : "Souscription continue"}
@@ -81,18 +83,19 @@ export default async function SubscribePage({
               </div>
               <p className="mt-2 text-[18px] font-medium">{fund.name}</p>
               <p className="mt-1 text-[13px] text-muted">
-                {fund.manager} · {fund.strategy}
+                {fund.manager} ·{" "}
+                {getTransparence(fund.slug)?.structureType.toLowerCase() ??
+                  "feeder"}
               </p>
 
               <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-4 border-t border-black/10 pt-6">
                 {[
+                  { label: "Stratégie", value: fund.strategy },
                   { label: "Ticket minimum", value: formatEuro(fund.min_ticket) },
-                  {
-                    label: "Multiple cible",
-                    value: `${formatMultiple(fund.target_multiple)} brut`,
-                  },
-                  { label: "Poche", value: fund.strategy },
-                  { label: "Clôture", value: fund.closing_label },
+                  { label: "Secteur", value: facts.sector },
+                  { label: "Géographie", value: facts.geography },
+                  { label: "Positionnement", value: facts.positioning },
+                  { label: "Closing final", value: fund.closing_label },
                 ].map((s) => (
                   <div key={s.label}>
                     <dt className="text-[11px] uppercase tracking-[0.06em] text-muted">
