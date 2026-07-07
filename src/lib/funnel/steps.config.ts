@@ -53,6 +53,22 @@ export const STEPS: StepMeta[] = [
     eyebrow: "Étape 6 · Diversification",
     title: "L'ampleur du portefeuille",
     accentWord: "portefeuille",
-    subtitle: "Nombre de compartiments et récapitulatif avant génération.",
+    subtitle: "Nombre de compartiments cible pour la sélection.",
+  },
+  {
+    slug: "funnel-step-profile",
+    eyebrow: "Étape 7 · Profil type",
+    title: "Le profil investisseur",
+    accentWord: "profil",
+    subtitle:
+      "Synthèse de la qualification : score de dynamisme et allocation stratégique recommandée.",
+  },
+  {
+    slug: "funnel-step-selection",
+    eyebrow: "Étape 8 · Sélection des fonds",
+    title: "Les fonds retenus",
+    accentWord: "fonds",
+    subtitle:
+      "Parmi les fonds éligibles à la catégorisation, laissez le moteur choisir ou composez la sélection.",
   },
 ];

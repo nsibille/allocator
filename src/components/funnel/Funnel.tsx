@@ -8,14 +8,20 @@ import { TitleAccent } from "@/components/ui/TitleAccent";
 import { STEPS } from "@/lib/funnel/steps.config";
 import { validateStep } from "@/lib/funnel/schema";
 import { STEP_COUNT, useFunnelStore } from "@/stores/funnel.store";
+import { computeProfile } from "@/lib/allocation/profile";
 import { StepperRail } from "./StepperRail";
 import { STEP_COMPONENTS } from "./steps";
+import { FunnelFundsProvider } from "./context";
 import { createAllocation } from "@/app/(app)/allocations/new/actions";
+import type { Fund, QualificationInput } from "@/types/domain";
 
 export function Funnel({
+  funds = [],
   presetClientId,
   presetClientReference,
 }: {
+  /** Gamme active (chargée côté serveur) pour les étapes profil & sélection. */
+  funds?: Fund[];
   /** Rattache la piste à un client existant (depuis sa fiche) au lieu d'en créer un. */
   presetClientId?: string;
   presetClientReference?: string;
@@ -45,6 +51,21 @@ export function Funnel({
       return;
     }
     setSubmitError(null);
+    const qualInput: QualificationInput = {
+      patrimoine: state.patrimoine,
+      envelope: state.envelope,
+      riskProfile: state.riskProfile!,
+      experience: state.experience,
+      horizonYears: state.horizonYears,
+      immobilisation: state.immobilisation,
+      callCapacity: state.callCapacity,
+      objectives: state.objectives,
+      esg: state.esg,
+      revenusStability: state.revenusStability,
+      lossCapacity: state.lossCapacity,
+      reactionBaisse: state.reactionBaisse,
+    };
+    const profile = computeProfile(qualInput);
     startTransition(async () => {
       const res = await createAllocation({
         clientId: presetClientId,
@@ -60,20 +81,35 @@ export function Funnel({
         strategies: state.strategies,
         esg: state.esg,
         diversification: state.diversification,
+        mifidStatus: state.mifidStatus,
+        acceptedVehicles: state.acceptedVehicles,
+        ticketMin: state.ticketMin,
+        revenusStability: state.revenusStability,
+        lossCapacity: state.lossCapacity,
+        reactionBaisse: state.reactionBaisse,
+        autoSelect: state.autoSelect,
+        selectedFundIds: state.selectedFundIds,
+        dynamismScore: profile.dynamismScore,
+        profileLabel: profile.profileLabel,
+        subScores: profile.subScores,
       });
       // En cas de succès, la Server Action redirige ; ici on ne reçoit qu'une erreur.
       if (res && "error" in res) setSubmitError(res.error);
     });
   }
 
+  // Les deux dernières étapes (profil, sélection) sont plus riches → colonne large.
+  const wide = step >= STEP_COUNT - 2;
+
   return (
     <PageShell className="py-14">
+      <FunnelFundsProvider funds={funds}>
       <div className="grid gap-12 lg:grid-cols-[240px_1fr]">
         <aside className="lg:pt-2">
           <StepperRail />
         </aside>
 
-        <section className="max-w-[560px]">
+        <section className={wide ? "max-w-[860px]" : "max-w-[560px]"}>
           <Eyebrow>{meta.eyebrow}</Eyebrow>
           <TitleAccent
             title={meta.title}
@@ -124,6 +160,7 @@ export function Funnel({
           </div>
         </section>
       </div>
+      </FunnelFundsProvider>
     </PageShell>
   );
 }

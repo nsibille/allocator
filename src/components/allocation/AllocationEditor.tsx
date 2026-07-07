@@ -13,6 +13,7 @@ import { VintageTimeline } from "./VintageTimeline";
 import { ExposureConsolidation } from "./ExposureConsolidation";
 import { ExposureSteering } from "./ExposureSteering";
 import { ScenarioControls } from "@/components/projection/ScenarioControls";
+import { ScenarioCompare } from "@/components/projection/ScenarioCompare";
 import { PaceControl } from "@/components/projection/PaceControl";
 import { CashflowChart } from "@/components/projection/CashflowChart";
 import { JCurveChart } from "@/components/projection/JCurveChart";
@@ -89,12 +90,15 @@ export function AllocationEditor(props: AllocationEditorProps) {
   const fundsById = useMemo(() => new Map(funds.map((f) => [f.id, f])), [funds]);
   const cap = concentrationCap(envelope);
 
-  const lines = useMemo(
-    () =>
-      Object.entries(amounts)
-        .filter(([, a]) => a > 0)
-        .map(([fundId, amount]) => ({ fundId, amount })),
+  // Périmètre : tous les fonds sélectionnés (montant nul inclus) — persisté tel
+  // quel. Les projections/exposition n'utilisent que le sous-ensemble investi.
+  const perimeterLines = useMemo(
+    () => Object.entries(amounts).map(([fundId, amount]) => ({ fundId, amount })),
     [amounts],
+  );
+  const lines = useMemo(
+    () => perimeterLines.filter((l) => l.amount > 0),
+    [perimeterLines],
   );
   const total = lines.reduce((s, l) => s + l.amount, 0);
 
@@ -149,7 +153,7 @@ export function AllocationEditor(props: AllocationEditorProps) {
         allocationId,
         scenario,
         distPace,
-        lines,
+        lines: perimeterLines,
       });
       setStatus(res.ok ? "saved" : "error");
     }, 800);
@@ -157,7 +161,8 @@ export function AllocationEditor(props: AllocationEditorProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rev]);
 
-  const rows = activeFunds(funds).filter((f) => (amounts[f.id] ?? 0) > 0);
+  // Lignes affichées = périmètre (fonds présents, montant nul inclus).
+  const rows = activeFunds(funds).filter((f) => amounts[f.id] != null);
   const available = activeFunds(funds).filter((f) => amounts[f.id] == null);
 
   const statusLabel =
@@ -211,6 +216,15 @@ export function AllocationEditor(props: AllocationEditorProps) {
           <div className="mt-4">
             <ScenarioControls value={scenario} onChange={store.setScenario} />
           </div>
+          <div className="mt-5">
+            <ScenarioCompare
+              lines={lines}
+              fundsById={fundsById}
+              distPace={distPace}
+              value={scenario}
+              onChange={store.setScenario}
+            />
+          </div>
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <div className="rounded-card border border-black/10 bg-white p-5">
               <p className="mb-3 text-[12px] uppercase tracking-[0.06em] text-muted">
@@ -258,10 +272,19 @@ export function AllocationEditor(props: AllocationEditorProps) {
             <VintageTimeline amounts={amounts} fundsById={fundsById} />
             <div className="flex flex-col gap-2.5">
               <a
-                href={`/api/pdf/proposal/${allocationId}`}
+                href={`/api/pdf/mifid/${allocationId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2.5 rounded-pill bg-coral px-7 py-[15px] text-[15px] font-medium text-white transition-colors hover:bg-coral-deep"
+              >
+                <span>Rapport MiFID / AMF (PDF)</span>
+                <DoubleChevron />
+              </a>
+              <a
+                href={`/api/pdf/proposal/${allocationId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2.5 rounded-pill border border-black/20 px-7 py-[15px] text-[15px] font-medium text-slate transition-colors hover:border-coral hover:text-coral"
               >
                 <span>Exporter la note (PDF)</span>
                 <DoubleChevron />

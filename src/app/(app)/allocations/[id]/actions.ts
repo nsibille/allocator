@@ -41,10 +41,11 @@ export async function saveAllocation(
     .eq("id", allocationId);
   if (allocErr) return { ok: false, error: "Échec de la sauvegarde." };
 
-  const kept = lines.filter((l) => l.amount > 0);
-  const keptIds = kept.map((l) => l.fundId);
+  // Périmètre constant : on conserve TOUTES les lignes transmises, montants nuls
+  // compris. Seuls les fonds absents du payload (retrait explicite via la croix)
+  // sont supprimés.
+  const keptIds = lines.map((l) => l.fundId);
 
-  // Supprime les lignes retirées ou mises à zéro.
   const delQuery = supabase
     .from("allocation_lines")
     .delete()
@@ -55,10 +56,10 @@ export async function saveAllocation(
     await delQuery;
   }
 
-  // Upsert des lignes conservées (contrainte unique allocation_id+fund_id).
-  if (kept.length > 0) {
+  // Upsert des lignes du périmètre (contrainte unique allocation_id+fund_id).
+  if (lines.length > 0) {
     const { error: upErr } = await supabase.from("allocation_lines").upsert(
-      kept.map((l) => ({
+      lines.map((l) => ({
         allocation_id: allocationId,
         fund_id: l.fundId,
         amount: l.amount,

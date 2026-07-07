@@ -4,12 +4,15 @@ import { projectPortfolio } from "@/lib/projection/engine";
 import { buildNarrative } from "@/lib/narrative/build";
 import type {
   AllocationInput,
+  AllocationQualification,
   Fund,
   Objective,
   PacingProfile,
   ProjectionMetrics,
   Scenario,
 } from "@/types/domain";
+
+const SCENARIOS: Scenario[] = ["prudent", "central", "optimiste"];
 
 export interface ProposalData {
   allocation: {
@@ -27,6 +30,10 @@ export interface ProposalData {
   lines: { fund: Fund; amount: number }[];
   metrics: ProjectionMetrics;
   narrative: string[];
+  /** Qualification enrichie (profil type, score, catégorisation) — pour le rapport MiFID. */
+  qualification: AllocationQualification | null;
+  /** Métriques des trois scénarios (rapport MiFID). */
+  scenarios: { scenario: Scenario; metrics: ProjectionMetrics }[];
 }
 
 /** Charge et compose toutes les données nécessaires au PDF pour une allocation (RLS-scopé). */
@@ -83,10 +90,18 @@ export async function loadProposalData(id: string): Promise<ProposalData | null>
   const fundsById = new Map(lines.map((l) => [l.fund.id, l.fund]));
   const engineLines = lines.map((l) => ({ fundId: l.fund.id, amount: l.amount }));
 
+  const distPace = allocation.dist_pace ?? 0;
   const projection = projectPortfolio(engineLines, fundsById, {
     scenario: (allocation.scenario as Scenario) ?? "central",
-    distPace: allocation.dist_pace ?? 0,
+    distPace,
   });
+
+  // Métriques par scénario (rapport MiFID : tableau de comparaison).
+  const scenarios = SCENARIOS.map((scenario) => ({
+    scenario,
+    metrics: projectPortfolio(engineLines, fundsById, { scenario, distPace })
+      .metrics,
+  }));
 
   const input: AllocationInput = {
     envelope: Number(allocation.envelope_amount),
@@ -120,5 +135,8 @@ export async function loadProposalData(id: string): Promise<ProposalData | null>
     lines,
     metrics: projection.metrics,
     narrative,
+    qualification:
+      (allocation.qualification as AllocationQualification | null) ?? null,
+    scenarios,
   };
 }

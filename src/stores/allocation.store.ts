@@ -43,8 +43,15 @@ export const useAllocationStore = create<AllocationEditState>((set) => ({
       rev: s.rev + 1,
     })),
 
+  // Périmètre constant : le pilotage par cible (reglettes) ne retire jamais un
+  // fonds. Tout fonds du périmètre absent du résultat est remis à 0, pas supprimé.
   applyAmounts: (amounts) =>
-    set((s) => ({ amounts: { ...amounts }, rev: s.rev + 1 })),
+    set((s) => {
+      const merged: Record<string, number> = {};
+      for (const id of Object.keys(s.amounts)) merged[id] = 0;
+      for (const [id, v] of Object.entries(amounts)) merged[id] = Math.max(0, v);
+      return { amounts: merged, rev: s.rev + 1 };
+    }),
 
   addFund: (fundId, amount) =>
     set((s) =>

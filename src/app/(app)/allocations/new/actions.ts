@@ -4,10 +4,24 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { logClientEvent } from "@/lib/client/log-event";
-import { buildAllocation } from "@/lib/allocation/engine";
-import type { AllocationInput, Fund } from "@/types/domain";
+import { buildAllocation, buildFromSelection } from "@/lib/allocation/engine";
+import { eligibleFunds } from "@/lib/allocation/eligibility";
+import { computeProfile } from "@/lib/allocation/profile";
+import type {
+  AllocationInput,
+  AllocationQualification,
+  Fund,
+  QualificationInput,
+} from "@/types/domain";
+import type { Json } from "@/types/database.types";
 
 /* Server Action : qualifie → moteur d'allocation → persiste allocation + lignes. */
+
+const subScoreSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  value: z.number(),
+});
 
 const payloadSchema = z.object({
   clientId: z.string().uuid().optional(),
@@ -42,6 +56,19 @@ const payloadSchema = z.object({
   ),
   esg: z.boolean(),
   diversification: z.enum(["concentre", "equilibre", "large"]),
+  // Catégorisation & qualification enrichie.
+  mifidStatus: z.enum(["non_professionnel", "professionnel", "contrepartie"]),
+  acceptedVehicles: z.array(z.enum(["eltif", "fcpr", "fcpi", "fip", "feeder"])),
+  ticketMin: z.number().nonnegative(),
+  revenusStability: z.enum(["stable", "variable", "irregulier"]).nullable(),
+  lossCapacity: z.enum(["lt_10", "10_25", "25_50", "gt_50"]).nullable(),
+  reactionBaisse: z.enum(["vendre", "attendre", "renforcer"]).nullable(),
+  // Sélection des fonds.
+  autoSelect: z.boolean(),
+  selectedFundIds: z.array(z.string().uuid()),
+  dynamismScore: z.number(),
+  profileLabel: z.string(),
+  subScores: z.array(subScoreSchema),
 });
 
 export type CreateAllocationPayload = z.infer<typeof payloadSchema>;
@@ -89,10 +116,69 @@ export async function createAllocation(
     esg: p.esg,
     diversification: p.diversification,
   };
-  const lines = buildAllocation(input, funds as Fund[]);
+
+  // Univers éligible à la catégorisation de l'investisseur.
+  const eligible = eligibleFunds(funds as Fund[], {
+    envelope: p.envelope,
+    acceptedVehicles: p.acceptedVehicles,
+    professional: p.mifidStatus !== "non_professionnel",
+    riskProfile: p.riskProfile,
+  });
+  if (eligible.length === 0) {
+    return {
+      error:
+        "Aucun fonds éligible à cette catégorisation. Élargissez les enveloppes acceptées ou le profil.",
+    };
+  }
+
+  // Auto : le moteur compose parmi les éligibles. Manuel : périmètre imposé par
+  // le CGP (fonds éligibles choisis), montants nuls conservés.
+  const eligibleIds = new Set(eligible.map((f) => f.id));
+  const selected = eligible.filter((f) => p.selectedFundIds.includes(f.id));
+  const lines =
+    p.autoSelect || selected.length === 0
+      ? buildAllocation(input, eligible)
+      : buildFromSelection(input, selected);
   if (lines.length === 0) {
     return { error: "Aucune allocation n'a pu être composée avec ces critères." };
   }
+
+  // Recalcul serveur du profil type (ne jamais faire confiance au client).
+  const qualInput: QualificationInput = {
+    patrimoine: p.patrimoine,
+    envelope: p.envelope,
+    riskProfile: p.riskProfile,
+    experience: p.experience,
+    horizonYears: p.horizonYears,
+    immobilisation: p.immobilisation,
+    callCapacity: p.callCapacity,
+    objectives: p.objectives,
+    esg: p.esg,
+    revenusStability: p.revenusStability,
+    lossCapacity: p.lossCapacity,
+    reactionBaisse: p.reactionBaisse,
+  };
+  const investorProfile = computeProfile(qualInput);
+
+  const qualification: AllocationQualification = {
+    mifidStatus: p.mifidStatus,
+    acceptedVehicles: p.acceptedVehicles,
+    ticketMin: p.ticketMin,
+    experience: p.experience,
+    revenusStability: p.revenusStability,
+    lossCapacity: p.lossCapacity,
+    reactionBaisse: p.reactionBaisse,
+    immobilisation: p.immobilisation,
+    callCapacity: p.callCapacity,
+    patrimoine: p.patrimoine,
+    autoSelect: p.autoSelect,
+    dynamismScore: investorProfile.dynamismScore,
+    profileLabel: investorProfile.profileLabel,
+    subScores: investorProfile.subScores,
+    selectedFundIds: lines
+      .map((l) => l.fundId)
+      .filter((id) => eligibleIds.has(id)),
+  };
 
   // Client : rattachement à un client existant (piste depuis une fiche) ou création.
   let clientId = p.clientId ?? null;
@@ -129,6 +215,7 @@ export async function createAllocation(
       strategies: p.strategies,
       esg: p.esg,
       diversification: p.diversification,
+      qualification: qualification as unknown as Json,
       status: "proposed",
     })
     .select("id")
@@ -138,6 +225,7 @@ export async function createAllocation(
     return { error: "Échec de l'enregistrement de l'allocation." };
   }
 
+  // Toutes les lignes du périmètre, montants nuls compris (périmètre constant).
   const { error: linesError } = await supabase.from("allocation_lines").insert(
     lines.map((l) => ({
       allocation_id: allocation.id,

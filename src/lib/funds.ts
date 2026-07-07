@@ -1,11 +1,29 @@
 import type {
   Diversification,
   Fund,
+  MifidStatus,
   PacingProfile,
   StrategyBucket,
+  Vehicle,
 } from "@/types/domain";
 
 /* Helpers de gamme, pacing et formatage — logique pure, sans dépendance UI. */
+
+/** Libellés FR des véhicules / enveloppes réglementaires (colonne funds.vehicle). */
+export const VEHICLE_LABEL: Record<Vehicle, string> = {
+  eltif: "ELTIF",
+  fcpr: "FCPR",
+  fcpi: "FCPI",
+  fip: "FIP",
+  feeder: "Feeder",
+};
+
+/** Libellés FR des statuts MiFID de l'investisseur. */
+export const MIFID_STATUS_LABEL: Record<MifidStatus, string> = {
+  non_professionnel: "Investisseur non-professionnel",
+  professionnel: "Investisseur professionnel",
+  contrepartie: "Contrepartie éligible",
+};
 
 /** Libellés FR des poches (buckets). */
 export const BUCKET_LABEL: Record<StrategyBucket, string> = {

@@ -1,12 +1,17 @@
 import { z } from "zod";
 import { ENVELOPE_MIN, type FunnelState } from "@/stores/funnel.store";
+import { DIVERSIFICATION_RANGE } from "@/lib/funds";
 
 /* Validation Zod par étape du funnel (§8.1, §10 : enveloppe min 25 000 €). */
 
 export const stepSchemas = [
-  // Étape 1 — cabinet & client
+  // Étape 1 — cabinet, client & catégorisation
   z.object({
     clientReference: z.string().trim().min(2, "Référence client requise."),
+    mifidStatus: z.enum(["non_professionnel", "professionnel", "contrepartie"]),
+    acceptedVehicles: z
+      .array(z.string())
+      .min(1, "Sélectionnez au moins une enveloppe éligible."),
   }),
   // Étape 2 — patrimoine & enveloppe
   z.object({
@@ -46,6 +51,24 @@ export const stepSchemas = [
   z.object({
     diversification: z.enum(["concentre", "equilibre", "large"]),
   }),
+  // Étape 7 — profil type (récapitulatif, aucune saisie requise)
+  z.object({}),
+  // Étape 8 — sélection des fonds
+  z
+    .object({
+      autoSelect: z.boolean(),
+      selectedFundIds: z.array(z.string()),
+      diversification: z.enum(["concentre", "equilibre", "large"]),
+    })
+    .refine(
+      (v) =>
+        v.autoSelect ||
+        v.selectedFundIds.length >= DIVERSIFICATION_RANGE[v.diversification].min,
+      {
+        error: "Sélectionnez davantage de fonds pour couvrir la diversification cible.",
+        path: ["selectedFundIds"],
+      },
+    ),
 ] as const;
 
 /** Valide une étape donnée à partir de l'état complet du funnel. */

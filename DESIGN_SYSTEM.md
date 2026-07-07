@@ -200,7 +200,9 @@ Le handoff est pensé pour un site ; voici comment le décliner sur un outil B2B
 ### `funnel`
 | Slug | Rôle |
 |---|---|
-| `funnel-stepper-rail` · `funnel-step-cabinet` · `funnel-step-capital` · `funnel-step-risk` · `funnel-step-horizon` · `funnel-step-objectives` · `funnel-step-diversification` · `funnel-nav-footer` | 6 étapes, registre clair `cream`, champs `ui-field-*`, choix `ui-segmented`, CTA `ui-button-primary` |
+| `funnel-stepper-rail` · `funnel-step-cabinet` · `funnel-step-capital` · `funnel-step-risk` · `funnel-step-horizon` · `funnel-step-objectives` · `funnel-step-diversification` · `funnel-nav-footer` | 8 étapes, registre clair `cream`, champs `ui-field-*`, choix `ui-segmented`, CTA `ui-button-primary`. Étape 1 enrichie : statut MiFID + enveloppes éligibles (`ui-segmented multiple`) + ticket min. Étapes 2–3 enrichies : stabilité revenus, capacité de perte, réaction à la baisse |
+| `funnel-step-profile` | **Récap — profil type & score de dynamisme.** Score global (grande valeur corail) + badge de profil (`ui-badge`), 6 barres de sous-scores (piste `bg-black/10`, remplissage `bg-coral`) et donut d'allocation recommandée par poche (réutilise `alloc-bucket-donut`). Lecture seule ; logique pure `lib/allocation/profile.ts` |
+| `funnel-step-selection` | **Sélection des fonds.** Bascule « choisir automatiquement » (`ui-checkbox`, défaut ON = moteur). En manuel : grille de cartes des fonds éligibles (`lib/allocation/eligibility.ts`), sélection multiple, compteur vs plage de diversification, bouton « pré-remplir avec la reco » | accent corail sur la carte sélectionnée, badges `ui-badge` neutres |
 
 ### `alloc`
 | Slug | Rôle | Notes |
@@ -213,13 +215,14 @@ Le handoff est pensé pour un site ; voici comment le décliner sur un outil B2B
 | `alloc-fund-picker` | Ajout de fonds | pilules |
 | `alloc-total-indicator` | Total vs enveloppe | écart signalé en corail (pas de rouge/vert) |
 | `alloc-exposure-consolidation` | Exposition consolidée du portefeuille en look-through (géo · secteur · stade), pondérée par le capital, **recalculée en temps réel** à chaque ajustement de la répartition | réutilise `fund-exposure-bars` ; logique `lib/allocation/exposure.ts` ; aussi dans la note PDF |
-| `alloc-exposure-steering` | **Pilotage inverse multi-axes** : active géo / secteur / stade, curseurs de cible par zone, re-répartition en temps réel des fonds pour approcher toutes les cibles (moindres carrés empilés sur le simplexe, `steerMultiAxis`). Affiche cible vs atteint (faisabilité) | ne re-répartit que le panier courant, montants au pas du ticket |
+| `alloc-exposure-steering` | **Pilotage inverse multi-axes** : active géo / secteur / stade, curseurs de cible par zone, re-répartition en temps réel des fonds pour approcher toutes les cibles (moindres carrés empilés sur le simplexe, `steerMultiAxis`). Affiche cible vs atteint (faisabilité) | **périmètre constant** : un fonds tombé à 0 reste dans la répartition (jamais retiré), montants au pas du ticket |
 | `fund-exposure-bars` | Un axe d'exposition en barres horizontales corail (poids décroissant), présentation pure | partagé fiche fonds ↔ éditeur |
 
 ### `proj`
 | Slug | Rôle | Notes |
 |---|---|---|
 | `proj-controls-scenario` | Onglets `ui-tabs` prudent/central/optimiste | actif souligné corail |
+| `proj-scenario-compare` | 3 mini-cartes de scénario (TVPI / TRI net) ; l'active surlignée corail et sélectionne au clic. Ne remplace pas le détail — donne le contraste sans tout afficher | pilote partagé avec `proj-controls-scenario` |
 | `proj-controls-pace` | Curseur rythme distributions | poignée corail |
 | `proj-chart-cashflow` | Appels/distributions/VL (Recharts) | couleurs = tokens, appels en `muted`, distributions en `teal`, VL ligne corail |
 | `proj-chart-jcurve` | Courbe en J (aire + ligne zéro) | aire corail-wash, ligne corail |
@@ -230,6 +233,7 @@ Le handoff est pensé pour un site ; voici comment le décliner sur un outil B2B
 | Slug | Rôle |
 |---|---|
 | `doc-header-brand` · `doc-proposal-pdf` · `doc-bulletin-card` · `doc-mentions` | Export @react-pdf : couverture registre sombre, corps clair, mention agrément AMF |
+| `doc-mifid-report` | **Rapport MiFID / AMF détaillé** généré depuis la simulation (`/api/pdf/mifid/[id]`) : couverture + catégorisation MiFID, profil type & score de dynamisme (barres corail), répartition, exposition look-through (géo/secteur/stade), comparatif des 3 scénarios, argumentaire, facteurs de risque et mentions réglementaires. Réutilise `lib/pdf/theme.ts` + `format.ts` |
 
 ### `client`
 Écrans de gestion des clients (registre clair `cream`, entité centrale du portail côté Distributeur).

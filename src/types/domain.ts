@@ -39,6 +39,27 @@ export type QuestionnaireKind = "kyc" | "adequacy" | "esg" | "tax";
 /** Diversification souhaitée (nombre de compartiments cible). */
 export type Diversification = "concentre" | "equilibre" | "large";
 
+/** Enveloppe / véhicule réglementaire d'un fonds (colonne `funds.vehicle`). */
+export type Vehicle = "eltif" | "fcpr" | "fcpi" | "fip" | "feeder";
+
+/** Catégorisation MiFID de l'investisseur. */
+export type MifidStatus = "non_professionnel" | "professionnel" | "contrepartie";
+
+/** Expérience du non-coté (étape profil). */
+export type Experience = "novice" | "initie" | "averti";
+
+/** Capacité à immobiliser les sommes (étape horizon). */
+export type Immobilisation = "faible" | "moyenne" | "forte";
+
+/** Stabilité des revenus du foyer (étape patrimoine). */
+export type RevenusStability = "stable" | "variable" | "irregulier";
+
+/** Part du patrimoine mobilisable sans impact sur le train de vie (capacité de perte). */
+export type LossCapacity = "lt_10" | "10_25" | "25_50" | "gt_50";
+
+/** Réaction déclarée à une forte baisse de marché (tolérance comportementale). */
+export type ReactionBaisse = "vendre" | "attendre" | "renforcer";
+
 /** Objectifs multi-sélection du funnel (étape 5). */
 export type Objective =
   | "croissance"
@@ -66,6 +87,69 @@ export interface AllocationInput {
 export interface AllocationLine {
   fundId: string;
   amount: number;
+}
+
+/**
+ * Entrées de qualification enrichies servant au calcul du profil type et du
+ * score de dynamisme (indépendantes du store, réutilisables serveur/PDF).
+ */
+export interface QualificationInput {
+  patrimoine: number | null;
+  envelope: number;
+  riskProfile: RiskProfile;
+  experience: Experience | null;
+  horizonYears: number;
+  immobilisation: Immobilisation | null;
+  callCapacity: boolean;
+  objectives: Objective[];
+  esg: boolean;
+  revenusStability: RevenusStability | null;
+  lossCapacity: LossCapacity | null;
+  reactionBaisse: ReactionBaisse | null;
+}
+
+/** Un axe du profil type (barre de sous-score 0..100). */
+export interface ProfileSubScore {
+  key: string;
+  label: string;
+  value: number;
+}
+
+/** Profil type de l'investisseur synthétisé à partir de la qualification. */
+export interface InvestorProfile {
+  /** Score de dynamisme global 0..100. */
+  dynamismScore: number;
+  /** Libellé du profil dérivé du score (Prudent … Offensif). */
+  profileLabel: string;
+  /** Profil de risque dérivé du score (pour l'allocation recommandée). */
+  profileRisk: RiskProfile;
+  subScores: ProfileSubScore[];
+  /** Allocation stratégique recommandée par poche (poids 0..1). */
+  recommendedBuckets: { bucket: StrategyBucket; weight: number }[];
+  /** Le profil déclaré est cohérent avec le profil calculé. */
+  coherent: boolean;
+}
+
+/**
+ * Bloc `allocations.qualification` (jsonb) : entrées enrichies + score calculé
+ * + périmètre de fonds choisi (constant), tel que persisté par le funnel.
+ */
+export interface AllocationQualification {
+  mifidStatus: MifidStatus;
+  acceptedVehicles: Vehicle[];
+  ticketMin: number;
+  experience: Experience | null;
+  revenusStability: RevenusStability | null;
+  lossCapacity: LossCapacity | null;
+  reactionBaisse: ReactionBaisse | null;
+  immobilisation: Immobilisation | null;
+  callCapacity: boolean;
+  patrimoine: number | null;
+  autoSelect: boolean;
+  dynamismScore: number;
+  profileLabel: string;
+  subScores: ProfileSubScore[];
+  selectedFundIds: string[];
 }
 
 /** Une année de la projection agrégée (courbe en J). */

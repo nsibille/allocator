@@ -194,3 +194,95 @@ export function buildAllocation(
     .filter((f) => (amounts.get(f.id) ?? 0) > 0)
     .map((f) => ({ fundId: f.id, amount: amounts.get(f.id)! }));
 }
+
+/**
+ * Répartit l'enveloppe sur un ENSEMBLE DE FONDS IMPOSÉ (choix manuel du CGP),
+ * à périmètre constant : chaque fonds choisi figure dans le résultat, même si
+ * son montant est nul (ticket non finançable). On amorce chaque fonds au ticket
+ * quand l'enveloppe le permet (priorité au score), puis on distribue le solde
+ * en tickets entiers vers les poches sous leur cible. À la différence de
+ * `buildAllocation`, aucun fonds n'est ajouté ni retiré du périmètre.
+ */
+export function buildFromSelection(
+  input: AllocationInput,
+  selected: Fund[],
+): AllocationLine[] {
+  if (selected.length === 0) return [];
+  const cap = concentrationCap(input.envelope);
+  const weights = RISK_WEIGHTS[input.riskProfile];
+
+  // Score minimal ε pour un fonds hors poche active : il reste finançable même
+  // si le moteur ne le pondère pas (respect du choix explicite du CGP).
+  const scored: Scored[] = selected
+    .map((fund) => ({ fund, score: Math.max(scoreFund(fund, input), 1e-6) }))
+    .sort((a, b) => b.score - a.score || a.fund.min_ticket - b.fund.min_ticket);
+
+  const amounts = new Map<string, number>(selected.map((f) => [f.id, 0]));
+  const spent = () => [...amounts.values()].reduce((s, v) => s + v, 0);
+  const remaining = () => input.envelope - spent();
+
+  // 1. Amorçage : un ticket par fonds choisi, dans l'ordre du score, tant que
+  //    l'enveloppe et le cap de concentration le permettent.
+  for (const s of scored) {
+    if (s.fund.min_ticket <= remaining() && s.fund.min_ticket <= cap) {
+      amounts.set(s.fund.id, s.fund.min_ticket);
+    }
+  }
+
+  // 2. Distribution du solde par tickets entiers vers les poches sous leur cible.
+  const bucketTarget: Record<StrategyBucket, number> = {
+    defensif: weights.defensif * input.envelope,
+    coeur: weights.coeur * input.envelope,
+    croissance: weights.croissance * input.envelope,
+    satellite: weights.satellite * input.envelope,
+  };
+  const bucketCurrent = (): Record<StrategyBucket, number> => {
+    const acc: Record<StrategyBucket, number> = {
+      defensif: 0,
+      coeur: 0,
+      croissance: 0,
+      satellite: 0,
+    };
+    for (const s of scored) acc[s.fund.bucket] += amounts.get(s.fund.id) ?? 0;
+    return acc;
+  };
+
+  const minTicket = Math.min(...selected.map((f) => f.min_ticket));
+  const maxIterations = Math.ceil(input.envelope / Math.max(1, minTicket)) + 8;
+
+  for (let i = 0; i < maxIterations; i++) {
+    const rem = remaining();
+    if (rem < minTicket) break;
+    const current = bucketCurrent();
+
+    let best: Scored | null = null;
+    let bestPriority = -Infinity;
+    for (const s of scored) {
+      const held = amounts.get(s.fund.id) ?? 0;
+      const step = s.fund.min_ticket;
+      if (step > rem) continue;
+      if (held + step > cap) continue;
+      // Ne pas gonfler un fonds non amorcé (montant nul) : périmètre figé, on
+      // ne réintroduit pas de capital sur un fonds jamais finançable.
+      if (held === 0) continue;
+      const bucketNeed = Math.max(
+        0,
+        bucketTarget[s.fund.bucket] - current[s.fund.bucket],
+      );
+      const priority = bucketNeed > 0 ? bucketNeed * s.score : s.score * 1e-6;
+      if (priority > bestPriority) {
+        bestPriority = priority;
+        best = s;
+      }
+    }
+
+    if (!best) break;
+    amounts.set(best.fund.id, (amounts.get(best.fund.id) ?? 0) + best.fund.min_ticket);
+  }
+
+  // Résultat : tous les fonds choisis, ordonnés par sort_order, montant nul inclus.
+  return activeFunds(selected).map((f) => ({
+    fundId: f.id,
+    amount: amounts.get(f.id) ?? 0,
+  }));
+}

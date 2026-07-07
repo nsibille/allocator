@@ -67,6 +67,7 @@ export type Database = {
           id: string
           name: string
           objectives: Json
+          qualification: Json | null
           risk_profile: Database["public"]["Enums"]["risk_profile"]
           scenario: string
           status: Database["public"]["Enums"]["allocation_status"]
@@ -86,6 +87,7 @@ export type Database = {
           id?: string
           name?: string
           objectives?: Json
+          qualification?: Json | null
           risk_profile: Database["public"]["Enums"]["risk_profile"]
           scenario?: string
           status?: Database["public"]["Enums"]["allocation_status"]
@@ -105,6 +107,7 @@ export type Database = {
           id?: string
           name?: string
           objectives?: Json
+          qualification?: Json | null
           risk_profile?: Database["public"]["Enums"]["risk_profile"]
           scenario?: string
           status?: Database["public"]["Enums"]["allocation_status"]
@@ -426,12 +429,14 @@ export type Database = {
           min_ticket: number
           name: string
           pacing: Database["public"]["Enums"]["pacing_profile"]
+          professional_only: boolean
           risk_score: number | null
           slug: string
           sort_order: number
           strategy: string
           target_gross_irr: number
           target_multiple: number
+          vehicle: string
         }
         Insert: {
           bucket: Database["public"]["Enums"]["strategy_bucket"]
@@ -444,12 +449,14 @@ export type Database = {
           min_ticket?: number
           name: string
           pacing: Database["public"]["Enums"]["pacing_profile"]
+          professional_only?: boolean
           risk_score?: number | null
           slug: string
           sort_order?: number
           strategy: string
           target_gross_irr: number
           target_multiple: number
+          vehicle?: string
         }
         Update: {
           bucket?: Database["public"]["Enums"]["strategy_bucket"]
@@ -462,12 +469,14 @@ export type Database = {
           min_ticket?: number
           name?: string
           pacing?: Database["public"]["Enums"]["pacing_profile"]
+          professional_only?: boolean
           risk_score?: number | null
           slug?: string
           sort_order?: number
           strategy?: string
           target_gross_irr?: number
           target_multiple?: number
+          vehicle?: string
         }
         Relationships: []
       }

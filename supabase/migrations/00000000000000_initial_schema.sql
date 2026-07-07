@@ -76,7 +76,9 @@ create table if not exists public.funds (
   target_multiple numeric(4,2) not null,
   target_gross_irr numeric(4,3) not null,
   is_active boolean not null default true,
-  sort_order int not null default 0
+  sort_order int not null default 0,
+  vehicle text not null default 'eltif' check (vehicle in ('eltif', 'fcpr', 'fcpi', 'fip', 'feeder')),
+  professional_only boolean not null default false
 );
 
 -- Allocations
@@ -95,6 +97,7 @@ create table if not exists public.allocations (
   diversification text not null default 'equilibre',
   scenario text not null default 'central',
   dist_pace int not null default 0,
+  qualification jsonb,
   status allocation_status not null default 'draft',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
