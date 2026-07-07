@@ -34,9 +34,12 @@ export default async function FondsPage() {
           Nos fonds ouverts à la <em className="pc">souscription</em>
         </h1>
         <p className="mt-4 text-[17px] leading-[26px] text-slate">
-          Sélectionnez un fonds pour accéder à sa page commerciale, sa
-          documentation et initier immédiatement une souscription pour le compte
-          d'un investisseur.
+          Chaque véhicule est un <strong className="font-medium">feeder (fonds de
+          fonds)</strong> donnant accès, dès 100 000 €, aux stratégies de gérants
+          institutionnels de premier rang — Ardian, EQT, Tikehau, Blue Owl,
+          Keensight, Meridiam ou Mérieux. Sélectionnez un fonds pour accéder à sa
+          page commerciale, sa documentation et initier une souscription pour le
+          compte d'un client.
         </p>
       </header>
 

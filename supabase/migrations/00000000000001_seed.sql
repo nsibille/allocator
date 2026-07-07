@@ -21,7 +21,7 @@ values
   ('tikehau-decarbonization-ii','Tikehau Decarbonization Fund II – Feeder','Tikehau Capital','Growth Buyout','croissance','growth',100000,'Déc. 2026','2026-12-31',3,2,2.00,0.160,6),
   ('blue-owl-gp-stakes','Blue Owl GP Stakes Strategy','Blue Owl Capital','GP Stakes','coeur','gpstakes',100000,'Mars 2027','2027-03-31',3,0,2.00,0.150,7),
   ('pc-secondary-2026','Private Corner Secondary Fund 2026','Committed Advisors','Secondaire Growth Buyout','coeur','secondary',100000,'Juin 2027','2027-06-30',2,0,1.70,0.150,8),
-  ('european-midmarket-opportunities','European MidMarket Opportunities','PAI Partners, Keensight Capital, Eurazeo, General Atlantic','Buyout','coeur','buyout',25000,'Juin 2027','2027-06-30',3,0,2.10,0.170,9),
+  ('european-midmarket-opportunities','European MidMarket Opportunities','PAI Partners, Keensight Capital, Eurazeo, General Atlantic','Buyout','coeur','buyout',100000,'Juin 2027','2027-06-30',3,0,2.10,0.170,9),
   ('pc-wealth-buyout-2026','Private Corner Wealth Buyout 2026','Ardian','Buyout','coeur','buyout',100000,'Mars 2028','2028-03-31',3,0,2.10,0.170,10),
   ('us-midcap-buyout','US MidCap Buyout Strategies','Neuberger (sélection de gérants)','Buyout','coeur','buyout',100000,'Mars 2028','2028-03-31',3,0,2.20,0.180,11),
   ('meridiam-global-infrastructure','Meridiam Global Infrastructure Strategies','Meridiam','Infrastructure Core / Core+','defensif','infra',100000,'En continu',null,1,2,1.80,0.110,12)
