@@ -162,6 +162,8 @@ export type Database = {
           category: string
           client_id: string
           created_at: string
+          envelope: string | null
+          geography: string | null
           id: string
           label: string
           note: string | null
@@ -174,6 +176,8 @@ export type Database = {
           category: string
           client_id: string
           created_at?: string
+          envelope?: string | null
+          geography?: string | null
           id?: string
           label: string
           note?: string | null
@@ -186,6 +190,8 @@ export type Database = {
           category?: string
           client_id?: string
           created_at?: string
+          envelope?: string | null
+          geography?: string | null
           id?: string
           label?: string
           note?: string | null
