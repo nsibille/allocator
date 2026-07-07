@@ -156,45 +156,132 @@ export type Database = {
         }
         Relationships: []
       }
-      clients: {
+      client_documents: {
         Row: {
           cabinet_id: string
-          conseiller_id: string | null
+          client_id: string
           created_at: string
-          experience: string | null
-          horizon_years: number | null
+          doc_type: string
           id: string
-          liquidity: string | null
-          notes: string | null
-          patrimoine_financier: number | null
-          reference: string
-          risk_profile: Database["public"]["Enums"]["risk_profile"] | null
+          name: string
+          note: string | null
+          status: Database["public"]["Enums"]["document_status"]
         }
         Insert: {
           cabinet_id: string
-          conseiller_id?: string | null
+          client_id: string
           created_at?: string
-          experience?: string | null
-          horizon_years?: number | null
+          doc_type?: string
           id?: string
-          liquidity?: string | null
-          notes?: string | null
-          patrimoine_financier?: number | null
-          reference: string
-          risk_profile?: Database["public"]["Enums"]["risk_profile"] | null
+          name: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["document_status"]
         }
         Update: {
           cabinet_id?: string
+          client_id?: string
+          created_at?: string
+          doc_type?: string
+          id?: string
+          name?: string
+          note?: string | null
+          status?: Database["public"]["Enums"]["document_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_documents_cabinet_id_fkey"
+            columns: ["cabinet_id"]
+            isOneToOne: false
+            referencedRelation: "cabinets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_documents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          adequacy: Json
+          birth_date: string | null
+          cabinet_id: string
+          conseiller_id: string | null
+          created_at: string
+          email: string | null
+          esg_profile: Json
+          experience: string | null
+          first_name: string | null
+          horizon_years: number | null
+          id: string
+          kyc: Json
+          last_name: string | null
+          liquidity: string | null
+          nationality: string | null
+          notes: string | null
+          patrimoine_financier: number | null
+          phone: string | null
+          reference: string
+          risk_profile: Database["public"]["Enums"]["risk_profile"] | null
+          status: Database["public"]["Enums"]["client_status"]
+          tax: Json
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          adequacy?: Json
+          birth_date?: string | null
+          cabinet_id: string
           conseiller_id?: string | null
           created_at?: string
+          email?: string | null
+          esg_profile?: Json
           experience?: string | null
+          first_name?: string | null
           horizon_years?: number | null
           id?: string
+          kyc?: Json
+          last_name?: string | null
           liquidity?: string | null
+          nationality?: string | null
           notes?: string | null
           patrimoine_financier?: number | null
+          phone?: string | null
+          reference: string
+          risk_profile?: Database["public"]["Enums"]["risk_profile"] | null
+          status?: Database["public"]["Enums"]["client_status"]
+          tax?: Json
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          adequacy?: Json
+          birth_date?: string | null
+          cabinet_id?: string
+          conseiller_id?: string | null
+          created_at?: string
+          email?: string | null
+          esg_profile?: Json
+          experience?: string | null
+          first_name?: string | null
+          horizon_years?: number | null
+          id?: string
+          kyc?: Json
+          last_name?: string | null
+          liquidity?: string | null
+          nationality?: string | null
+          notes?: string | null
+          patrimoine_financier?: number | null
+          phone?: string | null
           reference?: string
           risk_profile?: Database["public"]["Enums"]["risk_profile"] | null
+          status?: Database["public"]["Enums"]["client_status"]
+          tax?: Json
+          updated_at?: string
         }
         Relationships: [
           {
@@ -376,6 +463,8 @@ export type Database = {
         | "archived"
       app_role: "conseiller" | "admin"
       bulletin_status: "generated" | "sent" | "signed" | "received"
+      client_status: "prospect" | "actif" | "archive"
+      document_status: "manquant" | "recu" | "valide" | "expire"
       pacing_profile:
         | "buyout"
         | "growth"
@@ -522,6 +611,8 @@ export const Constants = {
       ],
       app_role: ["conseiller", "admin"],
       bulletin_status: ["generated", "sent", "signed", "received"],
+      client_status: ["prospect", "actif", "archive"],
+      document_status: ["manquant", "recu", "valide", "expire"],
       pacing_profile: [
         "buyout",
         "growth",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
@@ -12,11 +12,26 @@ import { StepperRail } from "./StepperRail";
 import { STEP_COMPONENTS } from "./steps";
 import { createAllocation } from "@/app/(app)/allocations/new/actions";
 
-export function Funnel() {
+export function Funnel({
+  presetClientId,
+  presetClientReference,
+}: {
+  /** Rattache la piste à un client existant (depuis sa fiche) au lieu d'en créer un. */
+  presetClientId?: string;
+  presetClientReference?: string;
+} = {}) {
   const state = useFunnelStore();
   const { step, next, prev } = state;
   const [pending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Piste lancée depuis une fiche client : préremplit la référence.
+  useEffect(() => {
+    if (presetClientReference) {
+      state.set("clientReference", presetClientReference);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presetClientReference]);
 
   const meta = STEPS[step];
   const StepBody = STEP_COMPONENTS[step];
@@ -32,6 +47,7 @@ export function Funnel() {
     setSubmitError(null);
     startTransition(async () => {
       const res = await createAllocation({
+        clientId: presetClientId,
         clientReference: state.clientReference,
         patrimoine: state.patrimoine,
         envelope: state.envelope,

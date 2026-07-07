@@ -2,18 +2,20 @@ import Link from "next/link";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { createClient } from "@/lib/supabase/server";
 import { formatEuro } from "@/lib/funds";
-import { RISK_PROFILE_LABEL } from "@/lib/status";
+import { CLIENT_STATUS, RISK_PROFILE_LABEL } from "@/lib/status";
+import type { ClientStatus } from "@/types/domain";
 
-/** Écran clients : références HNWI anonymisées du cabinet (RLS-scopées). */
+/** client-list-table — listing des clients du cabinet (RLS-scopé), entité centrale. */
 export default async function ClientsPage() {
   const supabase = await createClient();
   const { data: clients } = await supabase
     .from("clients")
     .select(
-      "id, reference, patrimoine_financier, risk_profile, horizon_years, created_at, allocations(count)",
+      "id, reference, first_name, last_name, status, patrimoine_financier, risk_profile, created_at, allocations(count)",
     )
     .order("created_at", { ascending: false });
 
@@ -26,8 +28,8 @@ export default async function ClientsPage() {
         <h1 className="text-[42px] font-medium leading-[46px] tracking-[-0.01em]">
           Vos <em className="pc">clients</em>
         </h1>
-        <Link href="/allocations/new">
-          <Button>Nouvelle allocation</Button>
+        <Link href="/clients/new">
+          <Button>Nouveau client</Button>
         </Link>
       </div>
 
@@ -35,19 +37,19 @@ export default async function ClientsPage() {
         <EmptyState
           className="mt-10"
           title="Aucun client enregistré."
-          description="Chaque client HNWI est créé lors de la qualification, sous une référence anonymisée."
+          description="Créez votre premier client pour constituer son dossier de qualification et lui proposer des pistes d'investissement."
           action={
-            <Link href="/allocations/new">
-              <Button>Qualifier un client</Button>
+            <Link href="/clients/new">
+              <Button>Créer un client</Button>
             </Link>
           }
         />
       ) : (
         <div className="mt-8 overflow-x-auto">
-          <table className="w-full min-w-[640px] border-collapse">
+          <table className="w-full min-w-[720px] border-collapse">
             <thead>
               <tr className="border-b border-black/15 text-left">
-                {["Référence", "Profil", "Patrimoine", "Horizon", "Allocations"].map(
+                {["Client", "Statut", "Profil", "Patrimoine", "Pistes"].map(
                   (h) => (
                     <th
                       key={h}
@@ -64,9 +66,29 @@ export default async function ClientsPage() {
                 const count = Array.isArray(c.allocations)
                   ? (c.allocations[0]?.count ?? 0)
                   : 0;
+                const name =
+                  [c.first_name, c.last_name].filter(Boolean).join(" ") ||
+                  c.reference;
+                const st = CLIENT_STATUS[c.status as ClientStatus];
                 return (
-                  <tr key={c.id} className="border-b border-black/10">
-                    <td className="py-4 font-medium">{c.reference}</td>
+                  <tr
+                    key={c.id}
+                    className="border-b border-black/10 transition-colors hover:bg-white"
+                  >
+                    <td className="py-4">
+                      <Link
+                        href={`/clients/${c.id}`}
+                        className="font-medium transition-colors hover:text-coral"
+                      >
+                        {name}
+                      </Link>
+                      <span className="mt-0.5 block text-[12px] text-muted">
+                        Réf. {c.reference}
+                      </span>
+                    </td>
+                    <td className="py-4">
+                      <Badge tone={st.tone}>{st.label}</Badge>
+                    </td>
                     <td className="py-4 text-slate">
                       {c.risk_profile
                         ? (RISK_PROFILE_LABEL[c.risk_profile] ?? c.risk_profile)
@@ -76,9 +98,6 @@ export default async function ClientsPage() {
                       {c.patrimoine_financier != null
                         ? formatEuro(Number(c.patrimoine_financier))
                         : "—"}
-                    </td>
-                    <td className="py-4 text-slate">
-                      {c.horizon_years ? `${c.horizon_years} ans` : "—"}
                     </td>
                     <td className="py-4 text-slate">{count}</td>
                   </tr>
