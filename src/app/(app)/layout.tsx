@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/AppHeader";
-import { LogoutButton } from "@/components/layout/LogoutButton";
+import { AccountMenu } from "@/components/layout/AccountMenu";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -21,7 +21,7 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-dvh bg-cream text-slate">
-      <AppHeader variant="light" action={<LogoutButton />} />
+      <AppHeader variant="light" action={<AccountMenu email={user.email} />} />
       {children}
     </div>
   );

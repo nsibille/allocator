@@ -16,6 +16,9 @@ export interface FunnelState {
 
   // Étape 1 — cabinet & client
   clientReference: string;
+  /** Piste rattachée à une fiche existante : patrimoine & profil sont alors
+   *  pré-remplis depuis la fiche et toute modification la met à jour. */
+  linkedClient: boolean;
 
   // Étape 2 — patrimoine & enveloppe
   patrimoine: number | null;
@@ -53,6 +56,7 @@ export const ENVELOPE_MIN = 25000;
 const INITIAL = {
   step: 0,
   clientReference: "",
+  linkedClient: false,
   patrimoine: null,
   envelope: 200000,
   riskProfile: null,

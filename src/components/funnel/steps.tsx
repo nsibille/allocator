@@ -10,6 +10,17 @@ import type { Objective, PacingProfile } from "@/types/domain";
 
 const ENVELOPE_PRESETS = [100000, 250000, 500000, 1000000, 2000000];
 
+/** Bandeau indiquant qu'une valeur est reprise de la fiche et y sera réenregistrée. */
+function FicheHint({ who }: { who?: string }) {
+  return (
+    <div className="rounded-card border border-black/10 bg-cream-2 px-5 py-4 text-[14px] text-muted">
+      Repris de la fiche{who ? <> de {who}</> : ""}. Ajustez si besoin pendant
+      l&apos;échange&nbsp;: la fiche sera mise à jour à la génération de
+      l&apos;allocation.
+    </div>
+  );
+}
+
 /* funnel-step-cabinet */
 export function StepCabinet() {
   const { clientReference, set } = useFunnelStore();
@@ -33,10 +44,12 @@ export function StepCabinet() {
 
 /* funnel-step-capital */
 export function StepCapital() {
-  const { patrimoine, envelope, set } = useFunnelStore();
+  const { patrimoine, envelope, clientReference, linkedClient, set } =
+    useFunnelStore();
   const ratio = patrimoine && patrimoine > 0 ? envelope / patrimoine : null;
   return (
     <div className="flex flex-col gap-7">
+      {linkedClient && <FicheHint who={clientReference} />}
       <Field
         registre="light"
         name="patrimoine"
@@ -100,9 +113,11 @@ export function StepCapital() {
 
 /* funnel-step-risk */
 export function StepRisk() {
-  const { riskProfile, experience, set } = useFunnelStore();
+  const { riskProfile, experience, clientReference, linkedClient, set } =
+    useFunnelStore();
   return (
     <div className="flex flex-col gap-7">
+      {linkedClient && <FicheHint who={clientReference} />}
       <div>
         <p className="mb-3 text-[13px] text-slate">Profil d&apos;investisseur</p>
         <Segmented

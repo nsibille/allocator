@@ -112,6 +112,17 @@ export async function createAllocation(
       .select("id")
       .single();
     clientId = client?.id ?? null;
+  } else {
+    // Piste depuis une fiche : le patrimoine et le profil de risque saisis dans le
+    // funnel (mis à jour pendant l'échange) sont reportés sur la fiche du client.
+    await supabase
+      .from("clients")
+      .update({
+        patrimoine_financier: p.patrimoine,
+        risk_profile: p.riskProfile,
+        experience: p.experience,
+      })
+      .eq("id", clientId);
   }
 
   // Allocation.

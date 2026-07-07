@@ -11,24 +11,44 @@ import { STEP_COUNT, useFunnelStore } from "@/stores/funnel.store";
 import { StepperRail } from "./StepperRail";
 import { STEP_COMPONENTS } from "./steps";
 import { createAllocation } from "@/app/(app)/allocations/new/actions";
+import type { Experience } from "@/stores/funnel.store";
+import type { RiskProfile } from "@/types/domain";
+
+export type FunnelPreset = {
+  patrimoine: number | null;
+  riskProfile: RiskProfile | null;
+  experience: Experience | null;
+};
 
 export function Funnel({
   presetClientId,
   presetClientReference,
+  preset,
 }: {
   /** Rattache la piste à un client existant (depuis sa fiche) au lieu d'en créer un. */
   presetClientId?: string;
   presetClientReference?: string;
+  /** Valeurs pré-remplies depuis la fiche du client rattaché (patrimoine, profil). */
+  preset?: FunnelPreset;
 } = {}) {
   const state = useFunnelStore();
   const { step, next, prev } = state;
   const [pending, startTransition] = useTransition();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Piste lancée depuis une fiche client : préremplit la référence.
+  // Nouvelle piste : repart d'un état vierge (le store est un singleton) puis,
+  // si elle est lancée depuis une fiche, préremplit référence, patrimoine et profil
+  // de risque depuis la fiche (le funnel devient une surface de mise à jour).
   useEffect(() => {
+    state.reset();
     if (presetClientReference) {
       state.set("clientReference", presetClientReference);
+    }
+    state.set("linkedClient", Boolean(presetClientReference && preset));
+    if (preset) {
+      state.set("patrimoine", preset.patrimoine);
+      state.set("riskProfile", preset.riskProfile);
+      state.set("experience", preset.experience);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presetClientReference]);

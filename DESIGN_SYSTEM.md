@@ -165,7 +165,9 @@ Le handoff est pensé pour un site ; voici comment le décliner sur un outil B2B
 ### `layout`
 | Slug | Rôle | Notes handoff |
 |---|---|---|
-| `layout-app-header` | Barre (monogramme+wordmark, nav uppercase `.06em`, langue EN\|FR) | registres clair et sombre |
+| `layout-app-header` | Barre : monogramme+wordmark, `layout-primary-nav`, bloc `layout-account-menu` | registres clair et sombre |
+| `layout-primary-nav` | Nav principale (outils quotidiens : Accueil, Clients, Nos fonds, Offres, Souscriptions, Documents), uppercase `.06em` | actif = texte `coral` (`aria-current`) |
+| `layout-account-menu` | Menu déroulant « Mon compte » : profil, conseillers, rétrocessions, langue EN\|FR, déconnexion | trigger pilule, panneau `radius:18px`, ferme au clic extérieur / Échap / navigation |
 | `layout-page-shell` | Conteneur `1160px`, marge `40px`, gutter `24px` | |
 | `layout-sidebar-progress` | Rail de progression du funnel | |
 
@@ -304,6 +306,7 @@ uniquement — jamais de vert/orange (règle corail unique).
 | `portal-subscriptions-table` | Page `/souscriptions` : bandeau KPI (engagement, appelé, distribué, NAV) + tableau détaillé (fonds/part, investisseur, montants, statut) | export CSV (démo) |
 | `portal-retrocessions-table` | Page `/retrocessions` : rétrocessions dues (référence, type, statut de facturation, date paiement, montant) + KPI réglé/en attente | droits d'entrée & frais de gestion |
 | `portal-offers-table` | Page `/offres` : offres de distribution groupées par fonds puis par part (ISIN, ticket min, valorisation, frais d'entrée, statut) | mention AMF promotionnelle |
+| `portal-account-profile` | Page `/compte` : édition du profil du CGP connecté (identité + cabinet), accès depuis `layout-account-menu` | email issu de la session ; autres champs = échafaudage démo (persistance à câbler) |
 
 ---
 
