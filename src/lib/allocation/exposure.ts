@@ -135,10 +135,14 @@ export function steerableFunds(
     .filter((f): f is Fund => !!f && !!getTransparence(f.slug));
 }
 
-/** Gradient exponentié : minimise ½‖M·w − T‖² sur le simplexe. */
+/**
+ * Gradient exponentié : minimise ½‖M·w − T‖² sur le simplexe des poids.
+ * `target` est supposé DÉJÀ à l'échelle voulue (normalisé par bloc en amont) —
+ * le solveur ne renormalise pas, ce qui permet d'empiler plusieurs axes.
+ */
 function solveWeights(
-  matrix: number[][], // [zone][fonds]
-  target: number[], // aligné aux zones (sera normalisé)
+  matrix: number[][], // [ligne][fonds] — lignes = zones empilées de tous les axes
+  target: number[], // aligné aux lignes
   w0: number[],
   iters = 700,
   eta = 6,
@@ -146,8 +150,6 @@ function solveWeights(
   const nz = matrix.length;
   const nf = w0.length;
   if (nf === 0) return [];
-  const ts = target.reduce((a, b) => a + b, 0) || 1;
-  const T = target.map((x) => x / ts);
   let w = w0.slice();
   for (let it = 0; it < iters; it++) {
     const E = new Array(nz).fill(0);
@@ -160,7 +162,7 @@ function solveWeights(
     const next = new Array(nf).fill(0);
     for (let f = 0; f < nf; f++) {
       let g = 0;
-      for (let z = 0; z < nz; z++) g += (E[z] - T[z]) * matrix[z][f];
+      for (let z = 0; z < nz; z++) g += (E[z] - target[z]) * matrix[z][f];
       const nv = w[f] * Math.exp(-eta * g);
       next[f] = nv;
       sum += nv;
@@ -170,49 +172,73 @@ function solveWeights(
   return w;
 }
 
+/** Cible d'exposition sur un axe (zones + poids cible alignés, en 0–1 ou %). */
+export interface AxisTarget {
+  axis: ExposureAxis;
+  zones: string[];
+  target: number[];
+}
+
 export interface SteerOutcome {
   /** Nouveaux montants par fonds (fonds tombés à ~0 exclus). */
   amounts: Record<string, number>;
-  /** Exposition atteinte sur l'axe piloté (aligné à `zones`). */
-  achieved: ExposureSlice[];
+  /** Exposition atteinte par axe piloté. */
+  achieved: Partial<Record<ExposureAxis, ExposureSlice[]>>;
 }
 
 /**
- * Re-répartit le capital investi entre les fonds du panier pour approcher une
- * exposition cible sur un axe. Conserve l'enveloppe déployée (montant courant),
- * arrondit chaque montant au pas du ticket, écarte les fonds tombés sous un
- * ticket. Renvoie aussi l'exposition réellement atteinte (faisabilité).
+ * Pilotage multi-axes : re-répartit le capital investi entre les fonds du
+ * panier pour approcher SIMULTANÉMENT plusieurs expositions cibles (géo,
+ * secteur, stade). Chaque axe est normalisé (somme 1) puis empilé dans un même
+ * système de moindres carrés. Conserve l'enveloppe déployée, arrondit au pas du
+ * ticket, écarte les fonds tombés sous un ticket. Renvoie l'exposition atteinte
+ * par axe (faisabilité).
  */
-export function steerToTarget(
+export function steerMultiAxis(
   lines: { fundId: string; amount: number }[],
   fundsById: Map<string, Fund>,
-  axis: ExposureAxis,
-  zones: string[],
-  target: number[],
+  axesTargets: AxisTarget[],
   envelope: number,
 ): SteerOutcome {
   const basket = steerableFunds(lines, fundsById);
-  const nf = basket.length;
-  if (nf < 2) return { amounts: {}, achieved: [] };
+  if (basket.length < 2 || axesTargets.length === 0)
+    return { amounts: {}, achieved: {} };
 
-  const matrix = zones.map((z) => basket.map((f) => weightOn(f, axis, z)));
+  // Empile les axes : chaque bloc = zones d'un axe, cible normalisée à 1.
+  const rows: number[][] = [];
+  const bigT: number[] = [];
+  const blocks: { axis: ExposureAxis; zones: string[]; start: number }[] = [];
+  for (const at of axesTargets) {
+    const ts = at.target.reduce((a, b) => a + b, 0) || 1;
+    const start = rows.length;
+    at.zones.forEach((z, zi) => {
+      rows.push(basket.map((f) => weightOn(f, at.axis, z)));
+      bigT.push(at.target[zi] / ts);
+    });
+    blocks.push({ axis: at.axis, zones: at.zones, start });
+  }
+
   const amountOf = (id: string) =>
     lines.find((l) => l.fundId === id)?.amount ?? 0;
-
   const deployed = lines.reduce((s, l) => s + Math.max(0, l.amount), 0);
   const scale = deployed > 0 ? deployed : envelope;
 
-  // Amorçage : poids courants (ou uniforme).
   const w0raw = basket.map((f) => Math.max(amountOf(f.id), 1));
   const w0sum = w0raw.reduce((a, b) => a + b, 0);
   const w0 = w0raw.map((x) => x / w0sum);
 
-  const w = solveWeights(matrix, target, w0);
+  const w = solveWeights(rows, bigT, w0);
 
-  const achieved: ExposureSlice[] = zones.map((z, zi) => ({
-    label: z,
-    weight: basket.reduce((s, _f, fi) => s + matrix[zi][fi] * w[fi], 0),
-  }));
+  const achieved: Partial<Record<ExposureAxis, ExposureSlice[]>> = {};
+  for (const b of blocks) {
+    achieved[b.axis] = b.zones.map((z, zi) => ({
+      label: z,
+      weight: basket.reduce(
+        (s, _f, fi) => s + rows[b.start + zi][fi] * w[fi],
+        0,
+      ),
+    }));
+  }
 
   const amounts: Record<string, number> = {};
   basket.forEach((f, fi) => {
@@ -222,4 +248,22 @@ export function steerToTarget(
   });
 
   return { amounts, achieved };
+}
+
+/** Pilotage mono-axe (raccourci sur `steerMultiAxis`). */
+export function steerToTarget(
+  lines: { fundId: string; amount: number }[],
+  fundsById: Map<string, Fund>,
+  axis: ExposureAxis,
+  zones: string[],
+  target: number[],
+  envelope: number,
+): { amounts: Record<string, number>; achieved: ExposureSlice[] } {
+  const out = steerMultiAxis(
+    lines,
+    fundsById,
+    [{ axis, zones, target }],
+    envelope,
+  );
+  return { amounts: out.amounts, achieved: out.achieved[axis] ?? [] };
 }

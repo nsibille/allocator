@@ -213,6 +213,7 @@ Le handoff est pensé pour un site ; voici comment le décliner sur un outil B2B
 | `alloc-fund-picker` | Ajout de fonds | pilules |
 | `alloc-total-indicator` | Total vs enveloppe | écart signalé en corail (pas de rouge/vert) |
 | `alloc-exposure-consolidation` | Exposition consolidée du portefeuille en look-through (géo · secteur · stade), pondérée par le capital, **recalculée en temps réel** à chaque ajustement de la répartition | réutilise `fund-exposure-bars` ; logique `lib/allocation/exposure.ts` ; aussi dans la note PDF |
+| `alloc-exposure-steering` | **Pilotage inverse multi-axes** : active géo / secteur / stade, curseurs de cible par zone, re-répartition en temps réel des fonds pour approcher toutes les cibles (moindres carrés empilés sur le simplexe, `steerMultiAxis`). Affiche cible vs atteint (faisabilité) | ne re-répartit que le panier courant, montants au pas du ticket |
 | `fund-exposure-bars` | Un axe d'exposition en barres horizontales corail (poids décroissant), présentation pure | partagé fiche fonds ↔ éditeur |
 
 ### `proj`
