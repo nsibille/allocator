@@ -250,16 +250,24 @@ Gamme de promotion (registre clair `cream`) : page catalogue `/fonds`, page comm
 `/fonds/[slug]`, initiation de souscription `/fonds/[slug]/souscrire`. Réutilisent
 `ui-badge-*`, `ui-eyebrow-label`, `ui-title-accent`, `ui-button-*`, `layout-page-shell`.
 Aucun hex : les visuels passent par `fund-cover-illustration` (dégradés = tokens CSS).
-> **Repères factuels officiels** (source `privatecorner.eu/fonds`, `lib/catalog.ts`) :
-> chaque fonds est un **feeder (fonds de fonds)** à **100 000 € minimum** donnant accès à un
-> gérant institutionnel. `fundFacts(fund)` expose `assetClass` (Private Equity · Secondaire ·
-> Dette privée · Infrastructure, dérivée du `pacing`), `positioning` (Satellite · Cœur de
-> portefeuille), `sector` et `geography`. Ces repères s'affichent partout où un fonds est
-> montré (cartes, fiche, souscription, note PDF, ligne d'allocation). Le catalogue est
-> **groupé par classe d'actif** via `ASSET_CLASS_ORDER`, comme la source. Le positionnement
-> commercial (2 niveaux) reste distinct de la poche interne d'allocation `fund.bucket` (4
-> niveaux, utilisée par le moteur et le donut). Les objectifs de multiple/TRI ne figurent pas
-> sur la source : ce sont des hypothèses internes de projection, réservées à la fiche commerciale.
+> **Repères factuels officiels** (`lib/catalog.ts`) : chaque fonds est à **100 000 € minimum**
+> et donne accès à un gérant institutionnel. L'**architecture varie** (`structureType`, voir
+> transparisation) : feeder mono-gérant · fonds multi-gérants · fonds secondaire — **pas
+> uniquement du fonds de fonds**. `fundFacts(fund)` expose `assetClass` (Private Equity ·
+> Secondaire · Dette privée · Infrastructure, dérivée du `pacing`), `positioning` (Satellite ·
+> Cœur de portefeuille), `sector` et `geography`. Ces repères s'affichent partout où un fonds
+> est montré (cartes, fiche, souscription, note PDF, ligne d'allocation). Catalogue **groupé
+> par classe d'actif** via `ASSET_CLASS_ORDER`. Le positionnement commercial (2 niveaux) reste
+> distinct de la poche interne d'allocation `fund.bucket` (4 niveaux, moteur + donut). Les
+> objectifs de multiple/TRI ne figurent pas sur la source publique : hypothèses internes de
+> projection, réservées à la fiche commerciale.
+>
+> **Transparisation** (`lib/fonds/transparence.ts`, `fund-composition`) : donnée *illustrative*
+> de composition en look-through par slug — `structureType`, millésime, note de risque (1–5),
+> illiquidité, devise, **sous-jacents** (fonds maîtres / paniers, poids) et **expositions**
+> géographie / secteur / stade normalisées à 100 %. Affichée sur la fiche `/fonds/[slug]` via
+> `fund-composition` (barres corail, aucune lib de graphe). Avertissement méthodologique
+> obligatoire (`TRANSPARENCE_DISCLAIMER`).
 | Slug | Rôle | Notes |
 |---|---|---|
 | `fund-badge-strategy` | Badge stratégie | corail si actif, neutre sinon (pas 4 couleurs de statut) |
@@ -270,6 +278,7 @@ Aucun hex : les visuels passent par `fund-cover-illustration` (dégradés = toke
 | `fund-archive-row` | Ligne d'un fonds clôturé : vignette, millésime, performances réalisées (TVPI/DPI/TRI) | registre neutre |
 | `fund-commercial-page` | Page commerciale `/fonds/[slug]` : bandeau visuel, accroche, points clés, stratégie, documentation, bandeau d'action sombre (CTA souscription) | mention AMF |
 | `fund-subscribe-form` | Initiation de souscription mono-fonds : choix investisseur (client existant / nouveau), montant au pas du ticket, création de la note d'allocation | statut « proposée » |
+| `fund-composition` | Transparisation d'un fonds sur `/fonds/[slug]` : repères d'architecture, sous-jacents (fonds maîtres / paniers), expositions géo/secteur/stade en barres | donnée illustrative, avertissement obligatoire |
 
 ### `portal`
 Écrans de gestion back-office du cabinet (registre clair `cream`), accessibles depuis

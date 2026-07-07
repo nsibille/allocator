@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { normalizeFund, formatEuro } from "@/lib/funds";
 import { fundFacts, openStatus, toneForFund } from "@/lib/catalog";
+import { getTransparence } from "@/lib/fonds/transparence";
 import type { Fund } from "@/types/domain";
 
 /**
@@ -82,7 +83,9 @@ export default async function SubscribePage({
               </div>
               <p className="mt-2 text-[18px] font-medium">{fund.name}</p>
               <p className="mt-1 text-[13px] text-muted">
-                {fund.manager} · feeder (fonds de fonds)
+                {fund.manager} ·{" "}
+                {getTransparence(fund.slug)?.structureType.toLowerCase() ??
+                  "feeder"}
               </p>
 
               <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-4 border-t border-black/10 pt-6">

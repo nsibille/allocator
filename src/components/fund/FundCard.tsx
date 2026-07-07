@@ -14,6 +14,7 @@ import {
   type ArchivedFund,
   type NewFund,
 } from "@/lib/catalog";
+import { getTransparence } from "@/lib/fonds/transparence";
 import type { Fund } from "@/types/domain";
 
 /**
@@ -54,7 +55,7 @@ export function FundCard({ fund }: { fund: Fund }) {
 
       <div className="flex flex-1 flex-col p-6">
         <p className="text-[11px] uppercase tracking-[0.14em] text-coral">
-          Feeder — fonds de fonds
+          {getTransparence(fund.slug)?.structureType ?? assetClassFor(fund.pacing)}
         </p>
         <Link href={`/fonds/${fund.slug}`}>
           <TitleAccent

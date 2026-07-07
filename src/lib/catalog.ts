@@ -6,6 +6,7 @@ import {
   formatMultiple,
   formatPercent,
 } from "@/lib/funds";
+import { getTransparence } from "@/lib/fonds/transparence";
 
 /* =========================================================================
    Catalogue commercial — pont entre la gamme réelle (table `funds`) et la
@@ -83,11 +84,13 @@ export interface FundCommercial {
 
 /**
  * Accroches et pitchs éditorialisés par slug (fallback générique sinon).
- * Signature Private Corner : chaque véhicule est un **feeder (fonds de fonds)**
- * donnant accès, dès 100 000 €, à des stratégies de gérants institutionnels de
- * premier rang dont les tickets directs dépassent plusieurs millions d'euros.
- * `positioning` reprend le positionnement commercial officiel (Satellite / Cœur
- * de portefeuille), distinct de la poche interne d'allocation (`fund.bucket`).
+ * Signature Private Corner : chaque véhicule donne accès, dès 100 000 €, à des
+ * stratégies de gérants institutionnels de premier rang dont les tickets directs
+ * dépassent plusieurs millions d'euros. L'architecture varie selon le fonds
+ * (feeder mono-gérant, fonds multi-gérants ou fonds secondaire) : voir
+ * `lib/fonds/transparence.ts` (`structureType`). `positioning` reprend le
+ * positionnement commercial officiel (Satellite / Cœur de portefeuille), distinct
+ * de la poche interne d'allocation (`fund.bucket`).
  */
 const COMMERCIAL_COPY: Record<
   string,
@@ -131,9 +134,9 @@ const COMMERCIAL_COPY: Record<
   "pc-credit-yield": {
     tagline: "Un revenu contractuel, une brique cœur défensive",
     pitch:
-      "Private Corner Credit Yield est un fonds de fonds de dette privée donnant accès, dès 100 000 €, aux stratégies de CVC et General Atlantic. Financement direct de sociétés de qualité, revenus contractuels récurrents et faible corrélation aux marchés cotés : la brique cœur de portefeuille d'une allocation non cotée.",
+      "Private Corner Credit Yield est un feeder de dette privée donnant accès, dès 100 000 €, aux stratégies de CVC et General Atlantic. Financement direct de sociétés de qualité, revenus contractuels récurrents et faible corrélation aux marchés cotés : la brique cœur de portefeuille d'une allocation non cotée.",
     strategy: [
-      "Fonds de fonds de dette privée (CVC & General Atlantic)",
+      "Feeder de dette privée (CVC & General Atlantic)",
       "Financement direct de sociétés de qualité (senior / unitranche)",
       "Revenus contractuels et distributions régulières",
       "Faible corrélation aux marchés actions",
@@ -187,9 +190,9 @@ const COMMERCIAL_COPY: Record<
   "blue-owl-gp-stakes": {
     tagline: "Investir dans les gérants, pas seulement dans leurs fonds",
     pitch:
-      "Blue Owl GP Stakes Strategy est un fonds de fonds donnant accès, dès 100 000 €, à des participations minoritaires au capital de sociétés de gestion alternatives établies dans le monde entier. Des revenus récurrents et diversifiés, décorrélés du cycle d'un fonds unique : une brique cœur de portefeuille.",
+      "Blue Owl GP Stakes Strategy est un feeder donnant accès, dès 100 000 €, à la stratégie GP Stakes de Blue Owl Capital : des participations minoritaires au capital de sociétés de gestion alternatives établies dans le monde entier. Des revenus récurrents et diversifiés, décorrélés du cycle d'un fonds unique : une brique cœur de portefeuille.",
     strategy: [
-      "Fonds de fonds prenant des participations au capital de gérants",
+      "Feeder d'accès à la stratégie GP Stakes de Blue Owl Capital",
       "Revenus récurrents (management fees) et upside (carried)",
       "Diversification sur des dizaines de fonds sous-jacents",
       "Profil de rendement défensif et récurrent",
@@ -201,9 +204,9 @@ const COMMERCIAL_COPY: Record<
   "pc-secondary-2026": {
     tagline: "Le non coté, sans la courbe en J",
     pitch:
-      "Private Corner Secondary Fund 2026 est un fonds de fonds secondaire donnant accès, dès 100 000 €, à la stratégie de Committed Advisors : l'acquisition, avec décote, de parts de fonds existants (États-Unis & Europe). Une entrée en portefeuille diversifiée et plus rapidement génératrice de liquidités.",
+      "Private Corner Secondary Fund 2026 est un fonds secondaire géré par Committed Advisors : l'acquisition, avec décote, de parts de fonds existants (États-Unis & Europe), diversifiées par millésimes et par gérants. Une entrée en portefeuille plus rapidement génératrice de liquidités.",
     strategy: [
-      "Fonds de fonds secondaire (Committed Advisors)",
+      "Fonds secondaire (Committed Advisors)",
       "Acquisition de parts de fonds matures avec décote",
       "Diversification par millésimes et par gérants",
       "Atténuation de la courbe en J, retour de liquidités précoce",
@@ -215,9 +218,9 @@ const COMMERCIAL_COPY: Record<
   "european-midmarket-opportunities": {
     tagline: "Le mid-market européen, multi-gérants",
     pitch:
-      "European MidMarket Opportunities est un fonds de fonds donnant accès, dès 100 000 €, aux meilleures signatures du buyout mid-market européen — PAI Partners, Keensight Capital, Eurazeo et General Atlantic — réunies dans un seul véhicule diversifié. Une brique cœur de portefeuille clé en main.",
+      "European MidMarket Opportunities est un fonds multi-gérants réunissant, dès 100 000 €, les meilleures signatures du buyout mid-market européen — PAI Partners, Keensight Capital, Eurazeo et General Atlantic — dans un seul véhicule diversifié. Une brique cœur de portefeuille clé en main.",
     strategy: [
-      "Fonds de fonds multi-gérants du mid-market européen",
+      "Fonds multi-gérants du mid-market européen",
       "PAI Partners, Keensight Capital, Eurazeo, General Atlantic",
       "Diversification multi-secteurs et multi-millésimes",
       "Cœur de portefeuille non coté",
@@ -229,9 +232,9 @@ const COMMERCIAL_COPY: Record<
   "pc-wealth-buyout-2026": {
     tagline: "Un millésime buyout Ardian, clé en main",
     pitch:
-      "Private Corner Wealth Buyout 2026 est un fonds de fonds géré par Ardian donnant accès, dès 100 000 €, à un programme de buyout diversifié sur des sociétés matures, en Europe et Amérique du Nord. Simplicité, diversification et discipline.",
+      "Private Corner Wealth Buyout 2026 est un feeder géré par Ardian donnant accès, dès 100 000 €, à un programme de buyout diversifié sur des sociétés matures, en Europe et Amérique du Nord. Simplicité, diversification et discipline.",
     strategy: [
-      "Fonds de fonds buyout diversifié (Ardian)",
+      "Feeder buyout diversifié (Ardian)",
       "Sociétés matures, multi-secteurs",
       "Diversification par secteurs et par zones",
       "Sélection et suivi délégués à un gérant de référence",
@@ -243,9 +246,9 @@ const COMMERCIAL_COPY: Record<
   "us-midcap-buyout": {
     tagline: "Le mid-cap américain, en sélection de gérants",
     pitch:
-      "US MidCap Buyout Strategies est un fonds de fonds donnant accès, dès 100 000 €, au segment le plus profond du private equity mondial — le mid-market américain — via une sélection de gérants opérée par Neuberger.",
+      "US MidCap Buyout Strategies est un fonds multi-gérants donnant accès, dès 100 000 €, au segment le plus profond du private equity mondial — le mid-market américain — via une sélection de gérants opérée par Neuberger Berman.",
     strategy: [
-      "Fonds de fonds multi-gérants (sélection Neuberger)",
+      "Fonds multi-gérants (sélection Neuberger Berman)",
       "Buyout mid-cap aux États-Unis",
       "Diversification sectorielle et géographique",
       "Exposition au dollar et au marché US",
@@ -257,9 +260,9 @@ const COMMERCIAL_COPY: Record<
   "meridiam-global-infrastructure": {
     tagline: "Des actifs réels, des flux prévisibles",
     pitch:
-      "Meridiam Global Infrastructure Strategies est un fonds de fonds d'infrastructure core / core+ donnant accès, dès 100 000 €, à la stratégie de Meridiam : des actifs essentiels de long terme (mobilité, solutions bas carbone, services publics). Une poche cœur défensive, en souscription continue.",
+      "Meridiam Global Infrastructure Strategies est un feeder d'infrastructure core / core+ donnant accès, dès 100 000 €, à la stratégie de Meridiam : des actifs essentiels de long terme (mobilité, solutions bas carbone, services publics). Une poche cœur défensive, en souscription continue.",
     strategy: [
-      "Fonds de fonds d'infrastructure core / core+ (Meridiam)",
+      "Feeder d'infrastructure core / core+ (Meridiam)",
       "Actifs essentiels : mobilité, bas carbone, services publics",
       "Flux de revenus prévisibles et indexés",
       "Faible corrélation, profil défensif de long terme",
@@ -288,7 +291,10 @@ export function buildCommercial(fund: Fund): FundCommercial {
     { label: "Classe d'actif", value: assetClassFor(fund.pacing) },
     { label: "Stratégie", value: fund.strategy },
     { label: "Gérant", value: fund.manager },
-    { label: "Structure", value: "Feeder — fonds de fonds" },
+    {
+      label: "Structure",
+      value: getTransparence(fund.slug)?.structureType ?? "Feeder mono-gérant",
+    },
     { label: "Positionnement", value: copy?.positioning ?? BUCKET_LABEL[fund.bucket] },
     { label: "Secteur", value: copy?.sector ?? fund.strategy },
     { label: "Géographies", value: geographies },

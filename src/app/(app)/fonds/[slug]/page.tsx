@@ -8,9 +8,10 @@ import { DoubleChevron } from "@/components/ui/DoubleChevron";
 import { TitleAccent } from "@/components/ui/TitleAccent";
 import { FundCover } from "@/components/fund/FundCover";
 import { createClient } from "@/lib/supabase/server";
-import { normalizeFund, formatEuro, formatMultiple, formatPercent, PACING_LABEL } from "@/lib/funds";
+import { normalizeFund, formatEuro, formatMultiple, formatPercent } from "@/lib/funds";
 import {
   accentWordFor,
+  assetClassFor,
   buildCommercial,
   findArchivedFund,
   findNewFund,
@@ -20,6 +21,8 @@ import {
   type ArchivedFund,
   type NewFund,
 } from "@/lib/catalog";
+import { getTransparence } from "@/lib/fonds/transparence";
+import { FundComposition } from "@/components/fund/FundComposition";
 import type { Fund } from "@/types/domain";
 
 const CONTACT = "partenaires@privatecorner.fr";
@@ -97,6 +100,7 @@ function OpenFundPage({ fund }: { fund: Fund }) {
   const status = openStatus(fund);
   const tone = toneForFund(fund.bucket, fund.pacing);
   const c = buildCommercial(fund);
+  const transparence = getTransparence(fund.slug);
 
   return (
     <PageShell className="py-12">
@@ -107,7 +111,7 @@ function OpenFundPage({ fund }: { fund: Fund }) {
         <FundCover seed={fund.slug} tone={tone} rounded={false} className="h-64 w-full sm:h-80" />
         <div className="absolute inset-0 flex flex-col justify-end p-8">
           <div className="flex items-center gap-3">
-            <Eyebrow>{PACING_LABEL[fund.pacing]}</Eyebrow>
+            <Eyebrow>{assetClassFor(fund.pacing)}</Eyebrow>
             <Badge tone={status === "open" ? "active" : "neutral"}>
               {status === "open" ? "En cours de levée" : "Souscription continue"}
             </Badge>
@@ -160,6 +164,10 @@ function OpenFundPage({ fund }: { fund: Fund }) {
               </li>
             ))}
           </ul>
+
+          {transparence && (
+            <FundComposition t={transparence} esgScore={fund.esg_score} />
+          )}
 
           <h2 className="mt-12 text-[22px] font-medium tracking-[-0.01em]">Documentation</h2>
           <p className="mt-2 text-[14px] text-muted">

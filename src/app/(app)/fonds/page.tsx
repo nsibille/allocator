@@ -39,12 +39,12 @@ export default async function FondsPage() {
           Nos fonds ouverts à la <em className="pc">souscription</em>
         </h1>
         <p className="mt-4 text-[17px] leading-[26px] text-slate">
-          Chaque véhicule est un <strong className="font-medium">feeder (fonds de
-          fonds)</strong> donnant accès, dès 100 000 €, aux stratégies de gérants
+          Chaque véhicule donne accès, dès 100 000 €, aux stratégies de gérants
           institutionnels de premier rang — Ardian, EQT, Tikehau, Blue Owl,
-          Keensight, Meridiam ou Mérieux. Sélectionnez un fonds pour accéder à sa
-          page commerciale, sa documentation et initier une souscription pour le
-          compte d'un client.
+          Keensight, Meridiam ou Mérieux. Selon le fonds : feeder mono-gérant,
+          fonds multi-gérants ou fonds secondaire, chacun présenté avec sa
+          composition transparisée (sous-jacents, expositions géographiques,
+          sectorielles et par stade).
         </p>
       </header>
 

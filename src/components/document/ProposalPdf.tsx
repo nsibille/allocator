@@ -7,6 +7,7 @@ import {
 } from "@react-pdf/renderer";
 import { PDF, AMF_AGREMENT } from "@/lib/pdf/theme";
 import { assetClassFor, fundFacts } from "@/lib/catalog";
+import { getTransparence } from "@/lib/fonds/transparence";
 import { pdfEuro, pdfMultiple, pdfPercent } from "@/lib/pdf/format";
 import type { ProposalData } from "@/lib/pdf/data";
 
@@ -114,8 +115,9 @@ export function ProposalPdf({ data }: { data: ProposalData }) {
               <View style={s.cFund}>
                 <Text style={s.fundName}>{fund.name}</Text>
                 <Text style={s.fundSub}>
-                  {fund.manager} · feeder · ticket {pdfEuro(fund.min_ticket)} ·
-                  closing {fund.closing_label}
+                  {fund.manager} ·{" "}
+                  {getTransparence(fund.slug)?.structureType ?? "Feeder"} · ticket{" "}
+                  {pdfEuro(fund.min_ticket)} · closing {fund.closing_label}
                 </Text>
               </View>
               <Text style={[s.cClass]}>
