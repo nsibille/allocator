@@ -246,10 +246,20 @@ Réutilisent `ui-tabs`, `ui-field-*`, `ui-select`, `ui-segmented`, `ui-checkbox`
 | `client-event-composer` | Composeur d'événement manuel (type, date, intitulé, montant, état, détail) | champs `light`, CTA `ui-button-primary` |
 
 ### `fund`
+Gamme de promotion (registre clair `cream`) : page catalogue `/fonds`, page commerciale
+`/fonds/[slug]`, initiation de souscription `/fonds/[slug]/souscrire`. Réutilisent
+`ui-badge-*`, `ui-eyebrow-label`, `ui-title-accent`, `ui-button-*`, `layout-page-shell`.
+Aucun hex : les visuels passent par `fund-cover-illustration` (dégradés = tokens CSS).
 | Slug | Rôle | Notes |
 |---|---|---|
 | `fund-badge-strategy` | Badge stratégie | corail si actif, neutre sinon (pas 4 couleurs de statut) |
 | `fund-card-summary` | Carte de fonds : eyebrow classe d'actif corail + badge statut, titre (mot Saol italic), stats grille 2 col, CTA pleine largeur | radius `18px`, bordure `line` |
+| `fund-cover-illustration` | Visuel abstrait génératif d'un fonds (SVG déterministe par seed) — dégradés teal/ink/coral/muted issus des tokens, arcs concentriques « architecture » | aucune image externe, zéro hex |
+| `fund-catalog` | Page `/fonds` : hero, grille des fonds ouverts, section « nouveaux fonds » (CTA infos/conventionnement), liste des fonds archivés | 3 registres de contenu |
+| `fund-card-new` | Carte d'un fonds en préparation : badge « Nouveau », CTA « Demander des informations » + « Me conventionner » + lien page commerciale | pas de souscription |
+| `fund-archive-row` | Ligne d'un fonds clôturé : vignette, millésime, performances réalisées (TVPI/DPI/TRI) | registre neutre |
+| `fund-commercial-page` | Page commerciale `/fonds/[slug]` : bandeau visuel, accroche, points clés, stratégie, documentation, bandeau d'action sombre (CTA souscription) | mention AMF |
+| `fund-subscribe-form` | Initiation de souscription mono-fonds : choix investisseur (client existant / nouveau), montant au pas du ticket, création de la note d'allocation | statut « proposée » |
 
 ---
 

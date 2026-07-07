@@ -10,6 +10,7 @@ type NavItem = { href: string; label: string };
 
 const DEFAULT_NAV: NavItem[] = [
   { href: "/", label: "Tableau de bord" },
+  { href: "/fonds", label: "Fonds" },
   { href: "/clients", label: "Clients" },
   { href: "/allocations/new", label: "Nouvelle allocation" },
 ];
