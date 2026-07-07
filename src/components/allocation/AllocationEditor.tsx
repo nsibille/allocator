@@ -11,6 +11,7 @@ import { TotalIndicator } from "./TotalIndicator";
 import { BucketDonut } from "./BucketDonut";
 import { VintageTimeline } from "./VintageTimeline";
 import { ExposureConsolidation } from "./ExposureConsolidation";
+import { ExposureSteering } from "./ExposureSteering";
 import { ScenarioControls } from "@/components/projection/ScenarioControls";
 import { PaceControl } from "@/components/projection/PaceControl";
 import { CashflowChart } from "@/components/projection/CashflowChart";
@@ -286,8 +287,13 @@ export function AllocationEditor(props: AllocationEditorProps) {
         </section>
 
         {/* Exposition consolidée (look-through) — temps réel */}
-        <section className="mt-14">
+        <section className="mt-14 grid gap-6 lg:grid-cols-2">
           <ExposureConsolidation exposure={exposure} />
+          <ExposureSteering
+            lines={lines}
+            fundsById={fundsById}
+            envelope={envelope}
+          />
         </section>
 
         {/* Discours — registre sombre */}
