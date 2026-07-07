@@ -1,0 +1,538 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      allocation_lines: {
+        Row: {
+          allocation_id: string
+          amount: number
+          created_at: string
+          fund_id: string
+          id: string
+        }
+        Insert: {
+          allocation_id: string
+          amount?: number
+          created_at?: string
+          fund_id: string
+          id?: string
+        }
+        Update: {
+          allocation_id?: string
+          amount?: number
+          created_at?: string
+          fund_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "allocation_lines_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "allocations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "allocation_lines_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "funds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      allocations: {
+        Row: {
+          cabinet_id: string
+          client_id: string | null
+          conseiller_id: string | null
+          created_at: string
+          dist_pace: number
+          diversification: string
+          envelope_amount: number
+          esg: boolean
+          horizon_years: number
+          id: string
+          name: string
+          objectives: Json
+          risk_profile: Database["public"]["Enums"]["risk_profile"]
+          scenario: string
+          status: Database["public"]["Enums"]["allocation_status"]
+          strategies: Json
+          updated_at: string
+        }
+        Insert: {
+          cabinet_id: string
+          client_id?: string | null
+          conseiller_id?: string | null
+          created_at?: string
+          dist_pace?: number
+          diversification?: string
+          envelope_amount: number
+          esg?: boolean
+          horizon_years?: number
+          id?: string
+          name?: string
+          objectives?: Json
+          risk_profile: Database["public"]["Enums"]["risk_profile"]
+          scenario?: string
+          status?: Database["public"]["Enums"]["allocation_status"]
+          strategies?: Json
+          updated_at?: string
+        }
+        Update: {
+          cabinet_id?: string
+          client_id?: string | null
+          conseiller_id?: string | null
+          created_at?: string
+          dist_pace?: number
+          diversification?: string
+          envelope_amount?: number
+          esg?: boolean
+          horizon_years?: number
+          id?: string
+          name?: string
+          objectives?: Json
+          risk_profile?: Database["public"]["Enums"]["risk_profile"]
+          scenario?: string
+          status?: Database["public"]["Enums"]["allocation_status"]
+          strategies?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "allocations_cabinet_id_fkey"
+            columns: ["cabinet_id"]
+            isOneToOne: false
+            referencedRelation: "cabinets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "allocations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "allocations_conseiller_id_fkey"
+            columns: ["conseiller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cabinets: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          orias: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          orias?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          orias?: string | null
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          cabinet_id: string
+          conseiller_id: string | null
+          created_at: string
+          experience: string | null
+          horizon_years: number | null
+          id: string
+          liquidity: string | null
+          notes: string | null
+          patrimoine_financier: number | null
+          reference: string
+          risk_profile: Database["public"]["Enums"]["risk_profile"] | null
+        }
+        Insert: {
+          cabinet_id: string
+          conseiller_id?: string | null
+          created_at?: string
+          experience?: string | null
+          horizon_years?: number | null
+          id?: string
+          liquidity?: string | null
+          notes?: string | null
+          patrimoine_financier?: number | null
+          reference: string
+          risk_profile?: Database["public"]["Enums"]["risk_profile"] | null
+        }
+        Update: {
+          cabinet_id?: string
+          conseiller_id?: string | null
+          created_at?: string
+          experience?: string | null
+          horizon_years?: number | null
+          id?: string
+          liquidity?: string | null
+          notes?: string | null
+          patrimoine_financier?: number | null
+          reference?: string
+          risk_profile?: Database["public"]["Enums"]["risk_profile"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_cabinet_id_fkey"
+            columns: ["cabinet_id"]
+            isOneToOne: false
+            referencedRelation: "cabinets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_conseiller_id_fkey"
+            columns: ["conseiller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      funds: {
+        Row: {
+          bucket: Database["public"]["Enums"]["strategy_bucket"]
+          closing_date: string | null
+          closing_label: string
+          esg_score: number | null
+          id: string
+          is_active: boolean
+          manager: string
+          min_ticket: number
+          name: string
+          pacing: Database["public"]["Enums"]["pacing_profile"]
+          risk_score: number | null
+          slug: string
+          sort_order: number
+          strategy: string
+          target_gross_irr: number
+          target_multiple: number
+        }
+        Insert: {
+          bucket: Database["public"]["Enums"]["strategy_bucket"]
+          closing_date?: string | null
+          closing_label: string
+          esg_score?: number | null
+          id?: string
+          is_active?: boolean
+          manager: string
+          min_ticket?: number
+          name: string
+          pacing: Database["public"]["Enums"]["pacing_profile"]
+          risk_score?: number | null
+          slug: string
+          sort_order?: number
+          strategy: string
+          target_gross_irr: number
+          target_multiple: number
+        }
+        Update: {
+          bucket?: Database["public"]["Enums"]["strategy_bucket"]
+          closing_date?: string | null
+          closing_label?: string
+          esg_score?: number | null
+          id?: string
+          is_active?: boolean
+          manager?: string
+          min_ticket?: number
+          name?: string
+          pacing?: Database["public"]["Enums"]["pacing_profile"]
+          risk_score?: number | null
+          slug?: string
+          sort_order?: number
+          strategy?: string
+          target_gross_irr?: number
+          target_multiple?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          cabinet_id: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          cabinet_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          cabinet_id?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_cabinet_id_fkey"
+            columns: ["cabinet_id"]
+            isOneToOne: false
+            referencedRelation: "cabinets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          allocation_id: string
+          amount: number
+          cabinet_id: string
+          fund_id: string
+          generated_at: string
+          id: string
+          reference: string
+          status: Database["public"]["Enums"]["bulletin_status"]
+        }
+        Insert: {
+          allocation_id: string
+          amount: number
+          cabinet_id: string
+          fund_id: string
+          generated_at?: string
+          id?: string
+          reference: string
+          status?: Database["public"]["Enums"]["bulletin_status"]
+        }
+        Update: {
+          allocation_id?: string
+          amount?: number
+          cabinet_id?: string
+          fund_id?: string
+          generated_at?: string
+          id?: string
+          reference?: string
+          status?: Database["public"]["Enums"]["bulletin_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "allocations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_cabinet_id_fkey"
+            columns: ["cabinet_id"]
+            isOneToOne: false
+            referencedRelation: "cabinets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "funds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      current_cabinet_id: { Args: never; Returns: string }
+    }
+    Enums: {
+      allocation_status:
+        | "draft"
+        | "proposed"
+        | "validated"
+        | "subscribed"
+        | "archived"
+      app_role: "conseiller" | "admin"
+      bulletin_status: "generated" | "sent" | "signed" | "received"
+      pacing_profile:
+        | "buyout"
+        | "growth"
+        | "innovation"
+        | "credit"
+        | "infra"
+        | "secondary"
+        | "gpstakes"
+      risk_profile: "prudent" | "equilibre" | "dynamique" | "offensif"
+      strategy_bucket: "defensif" | "coeur" | "croissance" | "satellite"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      allocation_status: [
+        "draft",
+        "proposed",
+        "validated",
+        "subscribed",
+        "archived",
+      ],
+      app_role: ["conseiller", "admin"],
+      bulletin_status: ["generated", "sent", "signed", "received"],
+      pacing_profile: [
+        "buyout",
+        "growth",
+        "innovation",
+        "credit",
+        "infra",
+        "secondary",
+        "gpstakes",
+      ],
+      risk_profile: ["prudent", "equilibre", "dynamique", "offensif"],
+      strategy_bucket: ["defensif", "coeur", "croissance", "satellite"],
+    },
+  },
+} as const
