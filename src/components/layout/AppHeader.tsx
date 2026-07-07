@@ -10,9 +10,13 @@ type NavItem = { href: string; label: string };
 
 const DEFAULT_NAV: NavItem[] = [
   { href: "/", label: "Tableau de bord" },
-  { href: "/fonds", label: "Fonds" },
-  { href: "/clients", label: "Clients" },
-  { href: "/allocations/new", label: "Nouvelle allocation" },
+  { href: "/conseillers", label: "Conseillers" },
+  { href: "/documents", label: "Documents" },
+  { href: "/fonds", label: "Nos fonds" },
+  { href: "/offres", label: "Offres" },
+  { href: "/souscriptions", label: "Souscriptions" },
+  { href: "/investisseurs", label: "Investisseurs" },
+  { href: "/retrocessions", label: "Rétrocessions" },
 ];
 
 export function AppHeader({
@@ -39,12 +43,12 @@ export function AppHeader({
           <Brand />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-6 xl:flex">
           {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-[13px] uppercase tracking-[0.06em] transition-opacity hover:opacity-70"
+              className="whitespace-nowrap text-[13px] uppercase tracking-[0.06em] transition-opacity hover:opacity-70"
             >
               {item.label}
             </Link>
@@ -65,8 +69,8 @@ export function AppHeader({
         </div>
       </PageShell>
 
-      {/* Nav mobile (repli sous md) */}
-      <PageShell className="flex gap-6 overflow-x-auto pb-3 md:hidden">
+      {/* Nav repliée (défilement horizontal sous xl) */}
+      <PageShell className="flex gap-6 overflow-x-auto pb-3 xl:hidden">
         {nav.map((item) => (
           <Link
             key={item.href}
