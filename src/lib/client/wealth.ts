@@ -43,20 +43,28 @@ interface SupportModel {
   geography: string;
 }
 
-/** Grille d'hypothèses par support déclaré (indicative). */
+/** Grille d'hypothèses par support déclaré (indicative, défaut de géographie). */
 const SUPPORT_MODEL: Record<string, SupportModel> = {
   residence_principale: { assetClass: "Immobilier", listing: "Non coté", geography: "France" },
   immobilier_locatif: { assetClass: "Immobilier", listing: "Non coté", geography: "France" },
+  immobilier_commercial: { assetClass: "Immobilier", listing: "Non coté", geography: "France" },
   scpi: { assetClass: "Immobilier", listing: "Non coté", geography: "Europe" },
   etf: { assetClass: "Actions cotées", listing: "Coté", geography: "Mondial diversifié" },
   actions: { assetClass: "Actions cotées", listing: "Coté", geography: "Mondial diversifié" },
   opcvm: { assetClass: "Fonds diversifiés", listing: "Coté", geography: "Mondial diversifié" },
-  private_equity: { assetClass: "Private Equity", listing: "Non coté", geography: "Mondial diversifié" },
+  produits_structures: { assetClass: "Produits structurés", listing: "Coté", geography: "Mondial diversifié" },
   fonds_euro: { assetClass: "Obligations & dette", listing: "Coté", geography: "Europe" },
   obligations: { assetClass: "Obligations & dette", listing: "Coté", geography: "Europe" },
-  produits_structures: { assetClass: "Produits structurés", listing: "Coté", geography: "Mondial diversifié" },
-  crypto: { assetClass: "Cryptoactifs", listing: "Coté", geography: "Mondial diversifié" },
+  private_equity: { assetClass: "Private Equity", listing: "Non coté", geography: "Mondial diversifié" },
+  startups_pme: { assetClass: "Private Equity", listing: "Non coté", geography: "France" },
+  crowdlending: { assetClass: "Obligations & dette", listing: "Non coté", geography: "Europe" },
+  livret: { assetClass: "Liquidités", listing: "Coté", geography: "France" },
+  compte_courant: { assetClass: "Liquidités", listing: "Coté", geography: "France" },
+  compte_terme: { assetClass: "Liquidités", listing: "Coté", geography: "France" },
   liquidites: { assetClass: "Liquidités", listing: "Coté", geography: "France" },
+  crypto: { assetClass: "Cryptoactifs", listing: "Coté", geography: "Mondial diversifié" },
+  metaux: { assetClass: "Métaux précieux", listing: "Non coté", geography: "Mondial diversifié" },
+  montres: { assetClass: "Autre", listing: "Non coté", geography: "Mondial diversifié" },
   autre: { assetClass: "Autre", listing: "Non coté", geography: "Mondial diversifié" },
 };
 
@@ -102,7 +110,7 @@ export function consolidatePatrimoine(
   let declaredTotal = 0;
   let privateCornerTotal = 0;
 
-  // Avoirs déclarés (grille d'hypothèses).
+  // Avoirs déclarés (grille d'hypothèses ; géographie déclarée si renseignée).
   for (const a of assets) {
     const v = Number(a.value);
     if (!(v > 0)) continue;
@@ -110,7 +118,7 @@ export function consolidatePatrimoine(
     const m = SUPPORT_MODEL[a.support] ?? SUPPORT_MODEL.autre;
     add(ac, m.assetClass, v);
     add(li, m.listing, v);
-    add(geo, m.geography, v);
+    add(geo, a.geography ?? m.geography, v);
   }
 
   // Souscriptions Private Corner (non coté, géographie transparisée).

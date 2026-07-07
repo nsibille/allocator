@@ -15,7 +15,7 @@ import {
   type ManualEventInput,
   type QuestionnaireInput,
 } from "@/lib/client/schema";
-import { categoryLabel, supportLabel } from "@/lib/client/patrimoine.config";
+import { classLabel, supportLabel } from "@/lib/client/patrimoine.config";
 import { logClientEvent } from "@/lib/client/log-event";
 import { EVENT_TYPES } from "@/lib/client/events.config";
 import { QUESTIONNAIRES } from "@/lib/client/questionnaires.config";
@@ -379,6 +379,8 @@ export async function addAsset(
     cabinet_id: ctx.cabinetId,
     category: a.category,
     support: a.support,
+    envelope: a.envelope,
+    geography: a.geography,
     label: a.label,
     value: a.value,
     note: a.note,
@@ -392,7 +394,7 @@ export async function addAsset(
     title: `Patrimoine — ${a.label}`,
     data: {
       kind: "asset_added",
-      category: categoryLabel(a.category),
+      category: classLabel(a.category),
       support: supportLabel(a.support),
       amount: a.value,
     },
@@ -421,6 +423,8 @@ export async function updateAsset(
     .update({
       category: a.category,
       support: a.support,
+      envelope: a.envelope,
+      geography: a.geography,
       label: a.label,
       value: a.value,
       note: a.note,

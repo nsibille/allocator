@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { Constants } from "@/types/database.types";
-import { CATEGORY_KEYS, SUPPORT_KEYS } from "@/lib/client/patrimoine.config";
+import {
+  CATEGORY_KEYS,
+  ENVELOPE_KEYS,
+  GEO_KEYS,
+  SUPPORT_KEYS,
+} from "@/lib/client/patrimoine.config";
 
 /* Validation Zod des formulaires clients (identité) + garde-fous questionnaires. */
 
@@ -120,17 +125,29 @@ export const manualEventSchema = z.object({
 
 export type ManualEventInput = z.input<typeof manualEventSchema>;
 
-/** Un avoir du patrimoine de l'investisseur (enveloppe + support + valeur). */
+/** Un avoir du patrimoine (classe d'actif + support + enveloppe/géo optionnels). */
 export const assetSchema = z.object({
   category: z
     .string()
     .trim()
-    .refine((v) => CATEGORY_KEYS.includes(v), "Enveloppe invalide."),
+    .refine((v) => CATEGORY_KEYS.includes(v), "Classe d'actif invalide."),
   support: z
     .string()
     .trim()
     .refine((v) => SUPPORT_KEYS.includes(v), "Support invalide.")
     .default("autre"),
+  envelope: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : null))
+    .refine((v) => v == null || ENVELOPE_KEYS.includes(v), "Enveloppe invalide."),
+  geography: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : null))
+    .refine((v) => v == null || GEO_KEYS.includes(v), "Zone invalide."),
   label: z.string().trim().min(2, "Libellé requis.").max(120),
   value: z
     .number({ error: "Valorisation requise." })
