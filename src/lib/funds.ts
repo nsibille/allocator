@@ -127,3 +127,20 @@ export function formatMultiple(m: number, digits = 1): string {
     maximumFractionDigits: digits,
   })}×`;
 }
+
+/**
+ * Formate un montant en euros de façon compacte (ex. 16 500 000 → « 16,5 M€ »,
+ * 820 000 → « 820 k€ »). Pour les grands chiffres de synthèse (KPIs, hero).
+ */
+export function formatEuroCompact(amount: number): string {
+  const abs = Math.abs(amount);
+  const sign = amount < 0 ? "-" : "";
+  const nf = (v: number, digits: number) =>
+    v.toLocaleString("fr-FR", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: digits,
+    });
+  if (abs >= 1_000_000) return `${sign}${nf(abs / 1_000_000, 1)} M€`;
+  if (abs >= 1_000) return `${sign}${nf(abs / 1_000, 0)} k€`;
+  return `${sign}${nf(abs, 0)} €`;
+}

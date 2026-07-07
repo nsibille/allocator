@@ -291,7 +291,8 @@ Aucun hex : les visuels passent par `fund-cover-illustration` (dégradés = toke
 ### `portal`
 Écrans de gestion back-office du cabinet (registre clair `cream`), accessibles depuis
 `layout-app-header`. Données **de démonstration statiques** (`lib/portal/demo.ts`), aucune
-dépendance base. Réutilisent `layout-page-shell`, `ui-eyebrow-label`, `ui-title-accent`,
+dépendance base — **exception** : `portal-dashboard` (page d'accueil) croise les clients
+**réels** (RLS) avec la démo du portail. Réutilisent `layout-page-shell`, `ui-eyebrow-label`, `ui-title-accent`,
 `ui-stat`, `ui-badge-*`, `ui-button-*`. Statuts : ton `active` (corail) / `neutral` (gris)
 uniquement — jamais de vert/orange (règle corail unique).
 > **Investisseur = client.** Terme canonique retenu : **client**. L'entrée de menu
@@ -301,6 +302,11 @@ uniquement — jamais de vert/orange (règle corail unique).
 > y compris depuis le tableau de bord qui renvoie d'abord au choix du client.
 | Slug | Rôle | Notes |
 |---|---|---|
+| `portal-dashboard` | Page d'accueil `/` : tableau de bord de pilotage du cabinet. Bandeau de synthèse **sombre** (`hero-gradient`) — collecte totale, encours conseillé, rétrocessions, base clients — surmontant la courbe de collecte cumulée ; puis base clients segmentée, collecte fonds par fonds, fonds ouverts & performance cible, performance des conseillers, rétrocessions, conventions | clients **réels** (RLS) ; collecte/rétros/conseillers/conventions = démo (`lib/portal`). Agrégations pures dans `lib/portal/dashboard.ts` |
+| `portal-dashboard-collection-trend` | Courbe de collecte cumulée (12 mois glissants), registre **sombre** : série unique aire corail-wash + ligne corail, axes/grille atténués (Recharts, tokens via `useThemeColors`) | mise à l'échelle sur la collecte réelle → point terminal = collecte totale |
+| `portal-dashboard-client-mix` | Anneau ajouré prospects vs clients (cohortes exclusives), total au centre. Teintes neutres `muted`/`teal` — corail réservé au signal « prêts à réinvestir » (hors anneau) | 2 tranches, écart 2px (anneau surface) |
+| `portal-dashboard-bar-list` | Barres horizontales corail par magnitude (collecte par fonds, encours par conseiller), part décroissante. Présentation pure serveur (dérivée de `fund-exposure-bars`) | corail plein = emphase, sinon corail atténué |
+| `portal-conventions-list` | Conventions de distribution cabinet ↔ société de gestion, groupées par étape (à initier · en cours · signées). Corail = action attendue, neutre = acquis | données démo (`CONVENTIONS`) |
 | `portal-advisors-table` | Page `/conseillers` : conseillers du cabinet (rôle, portefeuille investisseurs, encours, dernier accès, statut) + KPI | CTA « Inviter un conseiller » |
 | `portal-documents-browser` | Page `/documents` : index des dossiers à gauche, liste des pièces à droite (nom, dossier, date, taille) + recherche | métadonnées seules, non téléchargeables |
 | `portal-subscriptions-table` | Page `/souscriptions` : bandeau KPI (engagement, appelé, distribué, NAV) + tableau détaillé (fonds/part, investisseur, montants, statut) | export CSV (démo) |

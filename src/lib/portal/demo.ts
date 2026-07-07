@@ -480,3 +480,125 @@ export const OFFERS: Offer[] = [
     ],
   },
 ];
+
+/* -------------------------------------------------------------------------
+   Conventions de distribution (portal-conventions-list)
+   Accords cabinet ↔ société de gestion : signées, en cours de signature ou à
+   initier. Le corail signale ce qui appelle une action (« à faire ») ; le
+   neutre marque l'acquis (« signée »). Données de démonstration.
+   ------------------------------------------------------------------------- */
+
+export type ConventionStage = "signee" | "en_cours" | "a_faire";
+
+export interface Convention {
+  id: string;
+  partner: string;
+  scope: string;
+  stage: ConventionStage;
+  /** Date de signature (si signée) ou d'initiation de la démarche. */
+  date: string | null;
+  /** Nombre de fonds ouverts à la distribution via cette convention. */
+  funds: number;
+}
+
+export const CONVENTIONS: Convention[] = [
+  {
+    id: "conv-ardian",
+    partner: "Ardian",
+    scope: "Semiconductor · Wealth Buyout 2026",
+    stage: "signee",
+    date: "2024-09-01",
+    funds: 2,
+  },
+  {
+    id: "conv-eqt",
+    partner: "EQT",
+    scope: "Buyout EQT Strategy",
+    stage: "signee",
+    date: "2024-09-01",
+    funds: 1,
+  },
+  {
+    id: "conv-committed",
+    partner: "Committed Advisors",
+    scope: "Secondary Fund 2026",
+    stage: "signee",
+    date: "2025-11-18",
+    funds: 1,
+  },
+  {
+    id: "conv-keensight",
+    partner: "Keensight Capital",
+    scope: "Feeder Keensight Nova VII",
+    stage: "signee",
+    date: "2025-07-30",
+    funds: 1,
+  },
+  {
+    id: "conv-blueowl",
+    partner: "Blue Owl Capital",
+    scope: "GP Stakes Strategy",
+    stage: "en_cours",
+    date: "2026-06-12",
+    funds: 1,
+  },
+  {
+    id: "conv-meridiam",
+    partner: "Meridiam",
+    scope: "Global Infrastructure Strategies",
+    stage: "en_cours",
+    date: "2026-06-24",
+    funds: 1,
+  },
+  {
+    id: "conv-tikehau",
+    partner: "Tikehau Capital",
+    scope: "Decarbonization II · Private Debt Europe II",
+    stage: "a_faire",
+    date: null,
+    funds: 2,
+  },
+  {
+    id: "conv-andera",
+    partner: "Andera Partners",
+    scope: "Feeder Andera Life Sciences",
+    stage: "a_faire",
+    date: null,
+    funds: 1,
+  },
+];
+
+/** Libellé + ton d'une étape de convention (corail = action attendue). */
+export const CONVENTION_STAGE: Record<ConventionStage, PortalStatus> = {
+  signee: { label: "Signée", tone: "neutral" },
+  en_cours: { label: "En cours de signature", tone: "active" },
+  a_faire: { label: "À initier", tone: "active" },
+};
+
+/* -------------------------------------------------------------------------
+   Cadence de collecte — poids mensuels sur 12 mois glissants (Août 25 → Juil. 26).
+   La courbe cumulée est mise à l'échelle sur la collecte réelle (engagements des
+   souscriptions), de sorte que le point terminal = collecte totale (cohérence).
+   ------------------------------------------------------------------------- */
+
+export interface CollectionMonth {
+  /** Libellé court du mois (ex. « Août »). */
+  label: string;
+  /** Poids relatif de la collecte du mois (non normalisé). */
+  weight: number;
+}
+
+export const COLLECTION_CADENCE: CollectionMonth[] = [
+  { label: "Août", weight: 0.4 },
+  { label: "Sept.", weight: 0.8 },
+  { label: "Oct.", weight: 1.1 },
+  { label: "Nov.", weight: 1.3 },
+  { label: "Déc.", weight: 2.2 },
+  { label: "Janv.", weight: 1.0 },
+  { label: "Févr.", weight: 0.9 },
+  { label: "Mars", weight: 1.5 },
+  { label: "Avr.", weight: 1.2 },
+  { label: "Mai", weight: 1.7 },
+  { label: "Juin", weight: 2.0 },
+  { label: "Juil.", weight: 1.4 },
+];
