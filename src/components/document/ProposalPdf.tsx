@@ -6,7 +6,7 @@ import {
   View,
 } from "@react-pdf/renderer";
 import { PDF, AMF_AGREMENT } from "@/lib/pdf/theme";
-import { BUCKET_LABEL, PACING_LABEL } from "@/lib/funds";
+import { assetClassFor, fundFacts } from "@/lib/catalog";
 import { pdfEuro, pdfMultiple, pdfPercent } from "@/lib/pdf/format";
 import type { ProposalData } from "@/lib/pdf/data";
 
@@ -105,7 +105,7 @@ export function ProposalPdf({ data }: { data: ProposalData }) {
           <Text style={s.h2}>Répartition de l&apos;enveloppe</Text>
           <View style={s.tHead}>
             <Text style={[s.cFund, s.th]}>Compartiment</Text>
-            <Text style={[s.cClass, s.th]}>Poche · classe</Text>
+            <Text style={[s.cClass, s.th]}>Classe · positionnement</Text>
             <Text style={[s.cShare, s.th]}>Part</Text>
             <Text style={[s.cAmount, s.th]}>Montant</Text>
           </View>
@@ -114,12 +114,12 @@ export function ProposalPdf({ data }: { data: ProposalData }) {
               <View style={s.cFund}>
                 <Text style={s.fundName}>{fund.name}</Text>
                 <Text style={s.fundSub}>
-                  {fund.manager} · ticket {pdfEuro(fund.min_ticket)} · closing{" "}
-                  {fund.closing_label}
+                  {fund.manager} · feeder · ticket {pdfEuro(fund.min_ticket)} ·
+                  closing {fund.closing_label}
                 </Text>
               </View>
               <Text style={[s.cClass]}>
-                {BUCKET_LABEL[fund.bucket]} · {PACING_LABEL[fund.pacing]}
+                {assetClassFor(fund.pacing)} · {fundFacts(fund).positioning}
               </Text>
               <Text style={s.cShare}>
                 {total > 0 ? pdfPercent(amount / total, 0) : "—"}

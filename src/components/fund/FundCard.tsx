@@ -4,9 +4,11 @@ import { Badge } from "@/components/ui/Badge";
 import { TitleAccent } from "@/components/ui/TitleAccent";
 import { DoubleChevron } from "@/components/ui/DoubleChevron";
 import { FundCover } from "@/components/fund/FundCover";
-import { formatEuro, formatMultiple, formatPercent, PACING_LABEL } from "@/lib/funds";
+import { formatEuro, formatMultiple, formatPercent } from "@/lib/funds";
 import {
   accentWordFor,
+  assetClassFor,
+  fundFacts,
   openStatus,
   toneForFund,
   type ArchivedFund,
@@ -22,11 +24,14 @@ import type { Fund } from "@/types/domain";
 export function FundCard({ fund }: { fund: Fund }) {
   const status = openStatus(fund);
   const tone = toneForFund(fund.bucket, fund.pacing);
+  const facts = fundFacts(fund);
   const stats: { label: string; value: string }[] = [
-    { label: "Multiple cible", value: `${formatMultiple(fund.target_multiple)} brut` },
-    { label: "TRI brut cible", value: formatPercent(fund.target_gross_irr) },
+    { label: "Stratégie", value: fund.strategy },
     { label: "Ticket min.", value: formatEuro(fund.min_ticket) },
-    { label: "Clôture", value: fund.closing_label },
+    { label: "Secteur", value: facts.sector },
+    { label: "Géographie", value: facts.geography },
+    { label: "Positionnement", value: facts.positioning },
+    { label: "Closing final", value: fund.closing_label },
   ];
 
   return (
@@ -39,12 +44,17 @@ export function FundCard({ fund }: { fund: Fund }) {
               {status === "open" ? "En cours de levée" : "Souscription continue"}
             </Badge>
           </div>
+          <div className="absolute right-4 top-4">
+            <Badge tone="outline" className="bg-ink/40 backdrop-blur-sm">
+              {assetClassFor(fund.pacing)}
+            </Badge>
+          </div>
         </div>
       </Link>
 
       <div className="flex flex-1 flex-col p-6">
         <p className="text-[11px] uppercase tracking-[0.14em] text-coral">
-          {PACING_LABEL[fund.pacing]}
+          Feeder — fonds de fonds
         </p>
         <Link href={`/fonds/${fund.slug}`}>
           <TitleAccent

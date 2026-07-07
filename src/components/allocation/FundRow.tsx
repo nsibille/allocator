@@ -7,8 +7,8 @@ import {
   BUCKET_LABEL,
   formatEuro,
   formatPercent,
-  PACING_LABEL,
 } from "@/lib/funds";
+import { assetClassFor } from "@/lib/catalog";
 import type { Fund } from "@/types/domain";
 
 /**
@@ -40,7 +40,7 @@ export function FundRow({
               style={{ background: BUCKET_COLOR_VAR[fund.bucket] }}
             />
             <p className="text-[11px] uppercase tracking-[0.14em] text-coral">
-              {PACING_LABEL[fund.pacing]}
+              {assetClassFor(fund.pacing)}
             </p>
           </div>
           <p className="mt-1 truncate font-medium">{fund.name}</p>

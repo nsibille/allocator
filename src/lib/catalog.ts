@@ -285,6 +285,7 @@ export function buildCommercial(fund: Fund): FundCommercial {
   ];
 
   const highlights: FundCommercial["highlights"] = [
+    { label: "Classe d'actif", value: assetClassFor(fund.pacing) },
     { label: "Stratégie", value: fund.strategy },
     { label: "Gérant", value: fund.manager },
     { label: "Structure", value: "Feeder — fonds de fonds" },
@@ -298,6 +299,52 @@ export function buildCommercial(fund: Fund): FundCommercial {
   ];
 
   return { tagline, pitch, highlights, strategy, geographies };
+}
+
+/* -------------------------------------------------------------------------
+   Repères factuels officiels (source privatecorner.eu/fonds)
+   ------------------------------------------------------------------------- */
+
+/** Classe d'actif affichée en badge sur la source, dérivée du pacing. */
+export type AssetClass =
+  | "Private Equity"
+  | "Secondaire"
+  | "Dette privée"
+  | "Infrastructure";
+
+/** Ordre des sections par classe d'actif (identique à la source). */
+export const ASSET_CLASS_ORDER: AssetClass[] = [
+  "Private Equity",
+  "Secondaire",
+  "Dette privée",
+  "Infrastructure",
+];
+
+/** Déduit la classe d'actif d'un fonds de son profil de pacing. */
+export function assetClassFor(pacing: PacingProfile): AssetClass {
+  if (pacing === "credit") return "Dette privée";
+  if (pacing === "infra") return "Infrastructure";
+  if (pacing === "secondary") return "Secondaire";
+  return "Private Equity";
+}
+
+/** Repères factuels officiels d'un fonds (classe, positionnement, secteur, géo). */
+export interface FundFacts {
+  assetClass: AssetClass;
+  positioning: string;
+  sector: string;
+  geography: string;
+}
+
+/** Extrait les repères factuels d'un fonds (source de vérité : COMMERCIAL_COPY). */
+export function fundFacts(fund: Fund): FundFacts {
+  const copy = COMMERCIAL_COPY[fund.slug];
+  return {
+    assetClass: assetClassFor(fund.pacing),
+    positioning: copy?.positioning ?? BUCKET_LABEL[fund.bucket],
+    sector: copy?.sector ?? fund.strategy,
+    geography: copy?.geographies ?? "International",
+  };
 }
 
 /** Documents de la salle de données (démonstration — non téléchargeables). */

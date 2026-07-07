@@ -250,6 +250,16 @@ Gamme de promotion (registre clair `cream`) : page catalogue `/fonds`, page comm
 `/fonds/[slug]`, initiation de souscription `/fonds/[slug]/souscrire`. Réutilisent
 `ui-badge-*`, `ui-eyebrow-label`, `ui-title-accent`, `ui-button-*`, `layout-page-shell`.
 Aucun hex : les visuels passent par `fund-cover-illustration` (dégradés = tokens CSS).
+> **Repères factuels officiels** (source `privatecorner.eu/fonds`, `lib/catalog.ts`) :
+> chaque fonds est un **feeder (fonds de fonds)** à **100 000 € minimum** donnant accès à un
+> gérant institutionnel. `fundFacts(fund)` expose `assetClass` (Private Equity · Secondaire ·
+> Dette privée · Infrastructure, dérivée du `pacing`), `positioning` (Satellite · Cœur de
+> portefeuille), `sector` et `geography`. Ces repères s'affichent partout où un fonds est
+> montré (cartes, fiche, souscription, note PDF, ligne d'allocation). Le catalogue est
+> **groupé par classe d'actif** via `ASSET_CLASS_ORDER`, comme la source. Le positionnement
+> commercial (2 niveaux) reste distinct de la poche interne d'allocation `fund.bucket` (4
+> niveaux, utilisée par le moteur et le donut). Les objectifs de multiple/TRI ne figurent pas
+> sur la source : ce sont des hypothèses internes de projection, réservées à la fiche commerciale.
 | Slug | Rôle | Notes |
 |---|---|---|
 | `fund-badge-strategy` | Badge stratégie | corail si actif, neutre sinon (pas 4 couleurs de statut) |

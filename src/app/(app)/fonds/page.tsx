@@ -8,7 +8,12 @@ import {
 } from "@/components/fund/FundCard";
 import { createClient } from "@/lib/supabase/server";
 import { activeFunds } from "@/lib/funds";
-import { ARCHIVED_FUNDS, NEW_FUNDS } from "@/lib/catalog";
+import {
+  ARCHIVED_FUNDS,
+  ASSET_CLASS_ORDER,
+  NEW_FUNDS,
+  assetClassFor,
+} from "@/lib/catalog";
 import type { Fund } from "@/types/domain";
 
 /**
@@ -43,7 +48,7 @@ export default async function FondsPage() {
         </p>
       </header>
 
-      {/* Fonds ouverts */}
+      {/* Fonds ouverts, groupés par classe d'actif (comme la source) */}
       <section className="mt-12">
         <div className="flex items-end justify-between gap-6">
           <h2 className="text-[26px] font-medium leading-[32px] tracking-[-0.01em]">
@@ -67,11 +72,29 @@ export default async function FondsPage() {
             description="La gamme sera enrichie prochainement. Revenez consulter les nouveaux fonds ci-dessous."
           />
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {funds.map((fund) => (
-              <FundCard key={fund.id} fund={fund} />
-            ))}
-          </div>
+          ASSET_CLASS_ORDER.map((assetClass) => {
+            const classFunds = funds.filter(
+              (f) => assetClassFor(f.pacing) === assetClass,
+            );
+            if (classFunds.length === 0) return null;
+            return (
+              <div key={assetClass} className="mt-10 first:mt-8">
+                <div className="flex items-baseline gap-3">
+                  <h3 className="text-[15px] font-medium uppercase tracking-[0.06em] text-slate">
+                    {assetClass}
+                  </h3>
+                  <span className="text-[13px] text-muted">
+                    {classFunds.length} fonds
+                  </span>
+                </div>
+                <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {classFunds.map((fund) => (
+                    <FundCard key={fund.id} fund={fund} />
+                  ))}
+                </div>
+              </div>
+            );
+          })
         )}
       </section>
 
