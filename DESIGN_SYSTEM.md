@@ -243,6 +243,7 @@ Réutilisent `ui-tabs`, `ui-field-*`, `ui-select`, `ui-segmented`, `ui-checkbox`
 | `client-kpi-strip` | Bandeau de synthèse (patrimoine, pistes, souscriptions, complétude qualification) | `ui-stat`, unités corail |
 | `client-questionnaire-form` | Rendu générique d'un questionnaire piloté par la config (`questionnaires.config.ts`) | KYC / adéquation / ESG / fiscalité |
 | `client-documents-checklist` | Checklist documentaire (nom, type, statut) — métadonnées seules | statut en `ui-badge-*` (pas de vert/orange) |
+| `client-patrimoine` | Onglet Patrimoine : avoirs déclarés hors gamme Private Corner (enveloppe × support × valorisation) + synthèse par enveloppe en barres. Ajout / édition / suppression | table `client_assets` (RLS cabinet) ; config `lib/client/patrimoine.config.ts` |
 | `client-leads-list` | Pistes d'investissement du client (allocations/simulations) + CTA « Nouvelle piste » | liens vers `alloc` |
 | `client-activity-timeline` | Timeline relationnelle (CRM data-driven) : fil groupé par jour, rail vertical, pastille icône par catégorie | accent corail réservé aux signaux (souscription/flux) |
 | `client-event-item` | Item de timeline : icône Lucide (trait 1.5, `currentColor`), acteur, heure, pastilles montant/état, corps | pas de couleurs de statut multiples |

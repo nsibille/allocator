@@ -8,6 +8,7 @@ import {
 import type {
   AllocationStatus,
   BulletinStatus,
+  ClientAssetRow,
   ClientDocumentRow,
   ClientEventRow,
   ClientRow,
@@ -31,12 +32,18 @@ export default async function ClientDetailPage({
 
   const [
     { data: documents },
+    { data: assets },
     { data: allocations },
     { data: subs },
     { data: events },
   ] = await Promise.all([
     supabase
       .from("client_documents")
+      .select("*")
+      .eq("client_id", id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("client_assets")
       .select("*")
       .eq("client_id", id)
       .order("created_at", { ascending: true }),
@@ -84,6 +91,7 @@ export default async function ClientDetailPage({
     <ClientDetail
       client={client as ClientRow}
       documents={(documents ?? []) as ClientDocumentRow[]}
+      assets={(assets ?? []) as ClientAssetRow[]}
       leads={leads}
       subscriptions={subscriptions}
       events={(events ?? []) as ClientEventRow[]}
