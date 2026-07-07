@@ -3,12 +3,14 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { logClientEvent } from "@/lib/client/log-event";
 import { buildAllocation } from "@/lib/allocation/engine";
 import type { AllocationInput, Fund } from "@/types/domain";
 
 /* Server Action : qualifie → moteur d'allocation → persiste allocation + lignes. */
 
 const payloadSchema = z.object({
+  clientId: z.string().uuid().optional(),
   clientReference: z.string().trim().min(2),
   patrimoine: z.number().positive().nullable(),
   envelope: z.number().min(25000),
@@ -92,21 +94,25 @@ export async function createAllocation(
     return { error: "Aucune allocation n'a pu être composée avec ces critères." };
   }
 
-  // Client HNWI (référence anonymisée).
-  const { data: client } = await supabase
-    .from("clients")
-    .insert({
-      cabinet_id: profile.cabinet_id,
-      conseiller_id: profile.id,
-      reference: p.clientReference,
-      patrimoine_financier: p.patrimoine,
-      risk_profile: p.riskProfile,
-      experience: p.experience,
-      horizon_years: p.horizonYears,
-      liquidity: p.immobilisation,
-    })
-    .select("id")
-    .single();
+  // Client : rattachement à un client existant (piste depuis une fiche) ou création.
+  let clientId = p.clientId ?? null;
+  if (!clientId) {
+    const { data: client } = await supabase
+      .from("clients")
+      .insert({
+        cabinet_id: profile.cabinet_id,
+        conseiller_id: profile.id,
+        reference: p.clientReference,
+        patrimoine_financier: p.patrimoine,
+        risk_profile: p.riskProfile,
+        experience: p.experience,
+        horizon_years: p.horizonYears,
+        liquidity: p.immobilisation,
+      })
+      .select("id")
+      .single();
+    clientId = client?.id ?? null;
+  }
 
   // Allocation.
   const { data: allocation, error: allocError } = await supabase
@@ -114,7 +120,7 @@ export async function createAllocation(
     .insert({
       cabinet_id: profile.cabinet_id,
       conseiller_id: profile.id,
-      client_id: client?.id ?? null,
+      client_id: clientId,
       name: `Allocation ${p.clientReference}`,
       envelope_amount: p.envelope,
       risk_profile: p.riskProfile,
@@ -141,6 +147,16 @@ export async function createAllocation(
   );
   if (linesError) {
     return { error: "Échec de l'enregistrement des lignes d'allocation." };
+  }
+
+  if (clientId) {
+    await logClientEvent(supabase, {
+      clientId,
+      cabinetId: profile.cabinet_id,
+      type: "proposal_created",
+      title: `Allocation ${p.clientReference}`,
+      data: { amount: p.envelope, allocation_id: allocation.id },
+    });
   }
 
   redirect(`/allocations/${allocation.id}`);

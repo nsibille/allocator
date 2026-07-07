@@ -1,6 +1,7 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import { loadProposalData } from "@/lib/pdf/data";
 import { createClient } from "@/lib/supabase/server";
+import { logClientEvent } from "@/lib/client/log-event";
 import {
   BulletinsPdf,
   type BulletinLine,
@@ -23,7 +24,7 @@ export async function GET(
   const supabase = await createClient();
   const { data: allocation } = await supabase
     .from("allocations")
-    .select("cabinet_id")
+    .select("cabinet_id, client_id")
     .eq("id", id)
     .single();
   if (!allocation) return new Response("Allocation introuvable.", { status: 404 });
@@ -54,6 +55,18 @@ export async function GET(
       return new Response("Échec de la création des bulletins.", { status: 500 });
     }
     bulletins = rows.map((r) => ({ fundId: r.fund_id, reference: r.reference }));
+
+    // Timeline : souscription générée (best-effort, ne bloque pas le PDF).
+    if (allocation.client_id) {
+      const total = rows.reduce((s, r) => s + Number(r.amount), 0);
+      await logClientEvent(supabase, {
+        clientId: allocation.client_id,
+        cabinetId: allocation.cabinet_id,
+        type: "subscription_created",
+        title: `${rows.length} bulletin${rows.length > 1 ? "s" : ""} de souscription`,
+        data: { amount: total, allocation_id: id },
+      });
+    }
   }
 
   // Ordonne les bulletins selon l'ordre d'affichage des lignes.

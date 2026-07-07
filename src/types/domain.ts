@@ -7,9 +7,32 @@ export type StrategyBucket = Database["public"]["Enums"]["strategy_bucket"];
 export type PacingProfile = Database["public"]["Enums"]["pacing_profile"];
 export type AllocationStatus = Database["public"]["Enums"]["allocation_status"];
 export type BulletinStatus = Database["public"]["Enums"]["bulletin_status"];
+export type ClientStatus = Database["public"]["Enums"]["client_status"];
+export type DocumentStatus = Database["public"]["Enums"]["document_status"];
+export type ClientEventType = Database["public"]["Enums"]["client_event_type"];
+export type EventActor = Database["public"]["Enums"]["event_actor"];
 
 export type Fund = Database["public"]["Tables"]["funds"]["Row"];
 export type AllocationRow = Database["public"]["Tables"]["allocations"]["Row"];
+export type ClientRow = Database["public"]["Tables"]["clients"]["Row"];
+export type ClientDocumentRow =
+  Database["public"]["Tables"]["client_documents"]["Row"];
+export type ClientEventRow =
+  Database["public"]["Tables"]["client_events"]["Row"];
+
+/**
+ * Réponses d'un questionnaire de qualification (KYC, adéquation, ESG, fiscalité).
+ * Stockées telles quelles dans les colonnes JSONB du client ; le rendu et la
+ * sémantique des clés sont pilotés par `lib/client/questionnaires.config.ts`.
+ * Valeurs : chaîne (choix mono / texte), tableau (multi-sélection) ou nombre.
+ */
+export type QuestionnaireAnswers = Record<
+  string,
+  string | string[] | number | null
+>;
+
+/** Identifiant d'un des quatre questionnaires portés par le client. */
+export type QuestionnaireKind = "kyc" | "adequacy" | "esg" | "tax";
 
 /** Diversification souhaitée (nombre de compartiments cible). */
 export type Diversification = "concentre" | "equilibre" | "large";

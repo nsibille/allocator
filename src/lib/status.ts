@@ -1,4 +1,9 @@
-import type { AllocationStatus, BulletinStatus } from "@/types/domain";
+import type {
+  AllocationStatus,
+  BulletinStatus,
+  ClientStatus,
+  DocumentStatus,
+} from "@/types/domain";
 
 /* Libellés + tons de statut. Corail = signal « en cours / abouti » ; gris = neutre. */
 
@@ -21,6 +26,25 @@ export const BULLETIN_STATUS: Record<
   sent: { label: "Envoyé", tone: "active" },
   signed: { label: "Signé", tone: "active" },
   received: { label: "Reçu", tone: "neutral" },
+};
+
+export const CLIENT_STATUS: Record<
+  ClientStatus,
+  { label: string; tone: "active" | "neutral" }
+> = {
+  prospect: { label: "Prospect", tone: "neutral" },
+  actif: { label: "Actif", tone: "active" },
+  archive: { label: "Archivé", tone: "neutral" },
+};
+
+export const DOCUMENT_STATUS: Record<
+  DocumentStatus,
+  { label: string; tone: "active" | "neutral" }
+> = {
+  manquant: { label: "Manquant", tone: "neutral" },
+  recu: { label: "Reçu", tone: "active" },
+  valide: { label: "Validé", tone: "active" },
+  expire: { label: "Expiré", tone: "neutral" },
 };
 
 export const RISK_PROFILE_LABEL: Record<string, string> = {

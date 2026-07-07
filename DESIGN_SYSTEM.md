@@ -30,7 +30,7 @@ Trois registres de fond à faire vivre :
 2. **Section claire** — fond `cream`, texte `slate`, titre corail avec mots en Saol italic.
 3. **Bandeau corail plein** — fond `coral`, titre `slate-deep`, citation blanche.
 
-Domaines de slugs : `funnel` · `alloc` · `proj` · `doc` · `fund` · `ui` · `layout` · `auth`.
+Domaines de slugs : `funnel` · `alloc` · `proj` · `doc` · `fund` · `client` · `ui` · `layout` · `auth`.
 
 ---
 
@@ -227,6 +227,23 @@ Le handoff est pensé pour un site ; voici comment le décliner sur un outil B2B
 | Slug | Rôle |
 |---|---|
 | `doc-header-brand` · `doc-proposal-pdf` · `doc-bulletin-card` · `doc-mentions` | Export @react-pdf : couverture registre sombre, corps clair, mention agrément AMF |
+
+### `client`
+Écrans de gestion des clients (registre clair `cream`, entité centrale du portail côté Distributeur).
+Réutilisent `ui-tabs`, `ui-field-*`, `ui-select`, `ui-segmented`, `ui-checkbox`, `ui-badge-*`,
+`ui-button-*`, `ui-empty-state`, `ui-title-accent`, `layout-page-shell`. Aucun nouveau token/hex.
+| Slug | Rôle | Notes |
+|---|---|---|
+| `client-list-table` | Listing des clients (nom+référence, statut, patrimoine, pistes, souscriptions) | CTA « Nouveau client », lignes cliquables |
+| `client-form-identity` | Formulaire identité nominative + attributs de base (création/édition) | champs `light`, statut en `ui-segmented` |
+| `client-detail-tabs` | Fiche investisseur à onglets (Profil · Qualification · Documents · Souscriptions · Pistes) | motif `ui-tabs`, souligné corail |
+| `client-kpi-strip` | Bandeau de synthèse (patrimoine, pistes, souscriptions, complétude qualification) | `ui-stat`, unités corail |
+| `client-questionnaire-form` | Rendu générique d'un questionnaire piloté par la config (`questionnaires.config.ts`) | KYC / adéquation / ESG / fiscalité |
+| `client-documents-checklist` | Checklist documentaire (nom, type, statut) — métadonnées seules | statut en `ui-badge-*` (pas de vert/orange) |
+| `client-leads-list` | Pistes d'investissement du client (allocations/simulations) + CTA « Nouvelle piste » | liens vers `alloc` |
+| `client-activity-timeline` | Timeline relationnelle (CRM data-driven) : fil groupé par jour, rail vertical, pastille icône par catégorie | accent corail réservé aux signaux (souscription/flux) |
+| `client-event-item` | Item de timeline : icône Lucide (trait 1.5, `currentColor`), acteur, heure, pastilles montant/état, corps | pas de couleurs de statut multiples |
+| `client-event-composer` | Composeur d'événement manuel (type, date, intitulé, montant, état, détail) | champs `light`, CTA `ui-button-primary` |
 
 ### `fund`
 | Slug | Rôle | Notes |
