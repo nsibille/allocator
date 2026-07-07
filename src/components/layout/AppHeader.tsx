@@ -15,7 +15,7 @@ const DEFAULT_NAV: NavItem[] = [
   { href: "/fonds", label: "Nos fonds" },
   { href: "/offres", label: "Offres" },
   { href: "/souscriptions", label: "Souscriptions" },
-  { href: "/investisseurs", label: "Investisseurs" },
+  { href: "/clients", label: "Clients" },
   { href: "/retrocessions", label: "Rétrocessions" },
 ];
 

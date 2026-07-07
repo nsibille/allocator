@@ -1,8 +1,10 @@
 /* =========================================================================
    Données de démonstration du back-office CGP (domaine de slugs `portal`).
    Fictives et statiques : ces écrans illustrent les vues de gestion du
-   portail (conseillers, documents, souscriptions, investisseurs,
-   rétrocessions, offres) sans dépendre de la base. Aucune couleur en dur ;
+   portail (conseillers, documents, souscriptions, rétrocessions, offres)
+   sans dépendre de la base. Les investisseurs = les clients : ils sont gérés
+   par la fonctionnalité réelle « clients » (RLS-scopée), pas ici. Aucune
+   couleur en dur ;
    les statuts portent un ton (`active` = signal corail « en cours / abouti »,
    `neutral` = gris), jamais de vert/orange de statut (règle corail unique).
    ========================================================================= */
@@ -324,64 +326,6 @@ export function subscriptionTotals(rows: Subscription[]) {
     { commitment: 0, called: 0, distributed: 0, nav: 0 },
   );
 }
-
-/* -------------------------------------------------------------------------
-   Investisseurs (portal-investors-table)
-   ------------------------------------------------------------------------- */
-
-export interface Investor {
-  id: string;
-  name: string;
-  type: "physique" | "morale";
-  email: string;
-  advisor: string;
-  subscriptions: number;
-  commitment: number;
-  lastLogin: string | null;
-}
-
-export const INVESTORS: Investor[] = [
-  {
-    id: "inv-1",
-    name: "Marie Da Costa",
-    type: "physique",
-    email: "marie.dacosta@mail.com",
-    advisor: "Camille Rousseau",
-    subscriptions: 3,
-    commitment: 7_000_000,
-    lastLogin: "2026-07-01",
-  },
-  {
-    id: "inv-2",
-    name: "SCI Camussa",
-    type: "morale",
-    email: "contact@sci-camussa.fr",
-    advisor: "Thomas Da Costa",
-    subscriptions: 2,
-    commitment: 5_000_000,
-    lastLogin: "2026-06-22",
-  },
-  {
-    id: "inv-3",
-    name: "Famille Delaunay",
-    type: "physique",
-    email: "delaunay.patrimoine@mail.com",
-    advisor: "Camille Rousseau",
-    subscriptions: 2,
-    commitment: 3_500_000,
-    lastLogin: "2026-06-25",
-  },
-  {
-    id: "inv-4",
-    name: "Holding Vasseur",
-    type: "morale",
-    email: "direction@holding-vasseur.com",
-    advisor: "Inès Bianchi",
-    subscriptions: 2,
-    commitment: 2_000_000,
-    lastLogin: null,
-  },
-];
 
 /* -------------------------------------------------------------------------
    Rétrocessions (portal-retrocessions-table)

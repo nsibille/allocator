@@ -267,12 +267,16 @@ Aucun hex : les visuels passent par `fund-cover-illustration` (dégradés = toke
 dépendance base. Réutilisent `layout-page-shell`, `ui-eyebrow-label`, `ui-title-accent`,
 `ui-stat`, `ui-badge-*`, `ui-button-*`. Statuts : ton `active` (corail) / `neutral` (gris)
 uniquement — jamais de vert/orange (règle corail unique).
+> **Investisseur = client.** Terme canonique retenu : **client**. L'entrée de menu
+> « Clients » est la fonctionnalité réelle `client-*` (`/clients`, RLS-scopée) ; pas de
+> page de démo « investisseurs » séparée. « Nouvelle allocation » n'est pas une entrée de
+> menu : elle se lance uniquement depuis la fiche d'un client (`/allocations/new?client=<id>`),
+> y compris depuis le tableau de bord qui renvoie d'abord au choix du client.
 | Slug | Rôle | Notes |
 |---|---|---|
 | `portal-advisors-table` | Page `/conseillers` : conseillers du cabinet (rôle, portefeuille investisseurs, encours, dernier accès, statut) + KPI | CTA « Inviter un conseiller » |
 | `portal-documents-browser` | Page `/documents` : index des dossiers à gauche, liste des pièces à droite (nom, dossier, date, taille) + recherche | métadonnées seules, non téléchargeables |
 | `portal-subscriptions-table` | Page `/souscriptions` : bandeau KPI (engagement, appelé, distribué, NAV) + tableau détaillé (fonds/part, investisseur, montants, statut) | export CSV (démo) |
-| `portal-investors-table` | Page `/investisseurs` : répertoire (type physique/morale, conseiller référent, souscriptions, engagement, dernier login) + KPI | CTA « Nouvel investisseur » |
 | `portal-retrocessions-table` | Page `/retrocessions` : rétrocessions dues (référence, type, statut de facturation, date paiement, montant) + KPI réglé/en attente | droits d'entrée & frais de gestion |
 | `portal-offers-table` | Page `/offres` : offres de distribution groupées par fonds puis par part (ISIN, ticket min, valorisation, frais d'entrée, statut) | mention AMF promotionnelle |
 
