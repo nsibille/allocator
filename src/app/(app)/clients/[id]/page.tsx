@@ -12,7 +12,9 @@ import type {
   ClientDocumentRow,
   ClientEventRow,
   ClientRow,
+  PacingProfile,
 } from "@/types/domain";
+import type { PcHolding } from "@/lib/client/wealth";
 
 /** Fiche investisseur : identité, qualification, documents, souscriptions, pistes. */
 export default async function ClientDetailPage({
@@ -55,7 +57,7 @@ export default async function ClientDetailPage({
     supabase
       .from("subscriptions")
       .select(
-        "id, reference, amount, status, generated_at, funds(name), allocations!inner(client_id)",
+        "id, reference, amount, status, generated_at, funds(name, slug, pacing), allocations!inner(client_id)",
       )
       .eq("allocations.client_id", id)
       .order("generated_at", { ascending: true }),
@@ -87,11 +89,24 @@ export default async function ClientDetailPage({
     };
   });
 
+  const pcHoldings: PcHolding[] = (subs ?? [])
+    .map((s) => {
+      const fund = s.funds as {
+        slug: string;
+        pacing: PacingProfile;
+      } | null;
+      return fund
+        ? { slug: fund.slug, amount: Number(s.amount), pacing: fund.pacing }
+        : null;
+    })
+    .filter((h): h is PcHolding => h != null);
+
   return (
     <ClientDetail
       client={client as ClientRow}
       documents={(documents ?? []) as ClientDocumentRow[]}
       assets={(assets ?? []) as ClientAssetRow[]}
+      pcHoldings={pcHoldings}
       leads={leads}
       subscriptions={subscriptions}
       events={(events ?? []) as ClientEventRow[]}

@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { addAsset, deleteAsset, updateAsset } from "@/app/(app)/clients/actions";
+import { PatrimoineConsolidation } from "./PatrimoineConsolidation";
 import { formatEuro, formatPercent } from "@/lib/funds";
 import {
   ASSET_CATEGORIES,
   ASSET_SUPPORTS,
-  categoryLabel,
   supportLabel,
 } from "@/lib/client/patrimoine.config";
+import { consolidatePatrimoine, type PcHolding } from "@/lib/client/wealth";
 import type { ClientAssetRow } from "@/types/domain";
 
 /**
@@ -22,10 +23,13 @@ import type { ClientAssetRow } from "@/types/domain";
 export function PatrimoineTab({
   clientId,
   assets,
+  pcHoldings,
 }: {
   clientId: string;
   assets: ClientAssetRow[];
+  pcHoldings: PcHolding[];
 }) {
+  const consolidation = consolidatePatrimoine(assets, pcHoldings);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -93,6 +97,9 @@ export function PatrimoineTab({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Vue patrimoniale consolidée (déclaré + Private Corner transparisé) */}
+      <PatrimoineConsolidation consolidation={consolidation} />
+
       {/* Synthèse par enveloppe */}
       <section className="rounded-card border border-black/10 bg-white p-6 md:p-8">
         <div className="flex flex-wrap items-end justify-between gap-3">

@@ -14,6 +14,7 @@ import { QuestionnaireForm } from "./QuestionnaireForm";
 import { DocumentsChecklist } from "./DocumentsChecklist";
 import { PatrimoineTab } from "./PatrimoineTab";
 import { ClientTimeline } from "./ClientTimeline";
+import type { PcHolding } from "@/lib/client/wealth";
 import { deleteInvestor, setClientStatus } from "@/app/(app)/clients/actions";
 import {
   QUESTIONNAIRES,
@@ -82,6 +83,7 @@ export function ClientDetail({
   client,
   documents,
   assets,
+  pcHoldings,
   leads,
   subscriptions,
   events,
@@ -89,6 +91,7 @@ export function ClientDetail({
   client: ClientRow;
   documents: ClientDocumentRow[];
   assets: ClientAssetRow[];
+  pcHoldings: PcHolding[];
   leads: ClientLead[];
   subscriptions: ClientSubscription[];
   events: ClientEventRow[];
@@ -196,7 +199,11 @@ export function ClientDetail({
           <ClientTimeline clientId={client.id} events={events} />
         )}
         {tab === "patrimoine" && (
-          <PatrimoineTab clientId={client.id} assets={assets} />
+          <PatrimoineTab
+            clientId={client.id}
+            assets={assets}
+            pcHoldings={pcHoldings}
+          />
         )}
         {tab === "qualification" && (
           <div className="flex flex-col gap-6">
