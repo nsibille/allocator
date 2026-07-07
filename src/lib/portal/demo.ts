@@ -28,6 +28,8 @@ export interface Advisor {
   role: string;
   investors: number;
   aum: number;
+  /** Collecte apportée sur l'exercice en cours (tableau de bord). */
+  collected: number;
   lastLogin: string | null;
   status: PortalStatus;
 }
@@ -40,6 +42,7 @@ export const ADVISORS: Advisor[] = [
     role: "Conseiller principal",
     investors: 24,
     aum: 18_400_000,
+    collected: 6_200_000,
     lastLogin: "2026-07-06",
     status: { label: "Actif", tone: "active" },
   },
@@ -50,6 +53,7 @@ export const ADVISORS: Advisor[] = [
     role: "Conseiller associé",
     investors: 17,
     aum: 11_950_000,
+    collected: 4_900_000,
     lastLogin: "2026-07-05",
     status: { label: "Actif", tone: "active" },
   },
@@ -60,6 +64,7 @@ export const ADVISORS: Advisor[] = [
     role: "Conseillère",
     investors: 9,
     aum: 4_320_000,
+    collected: 2_100_000,
     lastLogin: "2026-06-28",
     status: { label: "Actif", tone: "active" },
   },
@@ -70,6 +75,7 @@ export const ADVISORS: Advisor[] = [
     role: "Conseiller",
     investors: 6,
     aum: 2_100_000,
+    collected: 800_000,
     lastLogin: null,
     status: { label: "Invitation envoyée", tone: "neutral" },
   },
@@ -80,6 +86,7 @@ export const ADVISORS: Advisor[] = [
     role: "Middle-office",
     investors: 0,
     aum: 0,
+    collected: 0,
     lastLogin: "2026-05-14",
     status: { label: "Suspendu", tone: "neutral" },
   },
@@ -478,5 +485,180 @@ export const OFFERS: Offer[] = [
         status: { label: "Validée", tone: "active" },
       },
     ],
+  },
+];
+
+/* -------------------------------------------------------------------------
+   Activité de collecte fonds par fonds (portal-dashboard-collection / -funds)
+   ------------------------------------------------------------------------- */
+
+export interface FundActivity {
+  id: string;
+  name: string;
+  manager: string;
+  bucket: "defensif" | "coeur" | "croissance" | "satellite";
+  /** Collecte apportée par le cabinet sur ce fonds (engagement cumulé). */
+  collected: number;
+  investors: number;
+  /** Fonds encore ouvert à la souscription. */
+  open: boolean;
+  /** TRI brut cible (ratio, ex. 0.18 = 18 %). */
+  targetIrr: number;
+  /** Multiple constaté à date (TVPI) ; null si trop tôt (fonds récent). */
+  tvpi: number | null;
+  closingLabel: string;
+}
+
+export const FUND_ACTIVITY: FundActivity[] = [
+  {
+    id: "fa-1",
+    name: "Private Corner Buyout EQT Strategy",
+    manager: "EQT",
+    bucket: "coeur",
+    collected: 5_000_000,
+    investors: 6,
+    open: true,
+    targetIrr: 0.18,
+    tvpi: 1.03,
+    closingLabel: "Clôture 31/12/2026",
+  },
+  {
+    id: "fa-2",
+    name: "Private Corner Secondary Fund 2026",
+    manager: "Private Corner",
+    bucket: "defensif",
+    collected: 3_000_000,
+    investors: 4,
+    open: true,
+    targetIrr: 0.17,
+    tvpi: 1.06,
+    closingLabel: "Clôture 30/06/2027",
+  },
+  {
+    id: "fa-3",
+    name: "Private Corner Credit Yield",
+    manager: "Private Corner",
+    bucket: "defensif",
+    collected: 3_000_000,
+    investors: 3,
+    open: true,
+    targetIrr: 0.11,
+    tvpi: 1.05,
+    closingLabel: "Clôture 31/12/2026",
+  },
+  {
+    id: "fa-4",
+    name: "Private Corner Wealth European Semiconductor",
+    manager: "Private Corner",
+    bucket: "croissance",
+    collected: 2_000_000,
+    investors: 2,
+    open: true,
+    targetIrr: 0.22,
+    tvpi: 1.02,
+    closingLabel: "Clôture 31/12/2026",
+  },
+  {
+    id: "fa-5",
+    name: "Blue Owl GP Stakes Strategy",
+    manager: "Blue Owl",
+    bucket: "satellite",
+    collected: 1_200_000,
+    investors: 1,
+    open: true,
+    targetIrr: 0.15,
+    tvpi: null,
+    closingLabel: "Clôture 31/03/2027",
+  },
+  {
+    id: "fa-6",
+    name: "PC Feeder Keensight Nova VII",
+    manager: "Keensight",
+    bucket: "croissance",
+    collected: 1_000_000,
+    investors: 1,
+    open: true,
+    targetIrr: 0.2,
+    tvpi: null,
+    closingLabel: "Clôture 31/12/2026",
+  },
+  {
+    id: "fa-7",
+    name: "Private Corner Wealth Buyout 2026",
+    manager: "Private Corner",
+    bucket: "coeur",
+    collected: 800_000,
+    investors: 1,
+    open: true,
+    targetIrr: 0.16,
+    tvpi: null,
+    closingLabel: "Clôture 31/12/2026",
+  },
+  {
+    id: "fa-8",
+    name: "PC Feeder Mérieux Innovation II",
+    manager: "Mérieux Equity Partners",
+    bucket: "satellite",
+    collected: 500_000,
+    investors: 2,
+    open: false,
+    targetIrr: 0.19,
+    tvpi: 1.04,
+    closingLabel: "Clôturé 30/06/2026",
+  },
+];
+
+/** Collecte totale du cabinet, tous fonds confondus. */
+export function totalCollected(rows: FundActivity[] = FUND_ACTIVITY): number {
+  return rows.reduce((s, f) => s + f.collected, 0);
+}
+
+/* -------------------------------------------------------------------------
+   Conventions de distribution (portal-dashboard-conventions)
+   ------------------------------------------------------------------------- */
+
+export interface Convention {
+  id: string;
+  title: string;
+  counterparty: string;
+  /** Échéance / prochaine action (libellé lisible). */
+  due: string;
+  status: PortalStatus;
+  /** Nécessite une action du cabinet (à faire / à renouveler). */
+  actionNeeded: boolean;
+}
+
+export const CONVENTIONS: Convention[] = [
+  {
+    id: "conv-1",
+    title: "Convention de distribution",
+    counterparty: "Private Corner (société de gestion)",
+    due: "En vigueur — échéance 09/01/2027",
+    status: { label: "En vigueur", tone: "active" },
+    actionNeeded: false,
+  },
+  {
+    id: "conv-2",
+    title: "Avenant SFDR — classification article 8",
+    counterparty: "Private Corner",
+    due: "À signer avant le 31/07/2026",
+    status: { label: "À faire", tone: "neutral" },
+    actionNeeded: true,
+  },
+  {
+    id: "conv-3",
+    title: "Convention RTO — réception-transmission d'ordres",
+    counterparty: "Dépositaire CACEIS",
+    due: "À renouveler avant le 15/09/2026",
+    status: { label: "À renouveler", tone: "neutral" },
+    actionNeeded: true,
+  },
+  {
+    id: "conv-4",
+    title: "Mandat de commercialisation Feeder Keensight",
+    counterparty: "Keensight Capital",
+    due: "En cours de signature",
+    status: { label: "En cours de signature", tone: "active" },
+    actionNeeded: false,
   },
 ];

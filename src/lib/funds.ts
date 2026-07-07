@@ -111,6 +111,16 @@ export function formatEuro(amount: number): string {
   }).format(amount);
 }
 
+/** Euro compact pour les grands totaux (16 500 000 → « 16,5 M€ »). */
+export function compactEuro(n: number): string {
+  if (n >= 1_000_000)
+    return `${(n / 1_000_000).toLocaleString("fr-FR", {
+      maximumFractionDigits: 1,
+    })} M€`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)} k€`;
+  return `${n} €`;
+}
+
 /** Formate un pourcentage (ex. 0.185 → « 18,5 % »). */
 export function formatPercent(ratio: number, digits = 1): string {
   return new Intl.NumberFormat("fr-FR", {
