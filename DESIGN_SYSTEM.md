@@ -307,6 +307,8 @@ uniquement — jamais de vert/orange (règle corail unique).
 | `portal-retrocessions-table` | Page `/retrocessions` : rétrocessions dues (référence, type, statut de facturation, date paiement, montant) + KPI réglé/en attente | droits d'entrée & frais de gestion |
 | `portal-offers-table` | Page `/offres` : offres de distribution groupées par fonds puis par part (ISIN, ticket min, valorisation, frais d'entrée, statut) | mention AMF promotionnelle |
 | `portal-account-profile` | Page `/compte` : édition du profil du CGP connecté (identité + cabinet), accès depuis `layout-account-menu` | email issu de la session ; autres champs = échafaudage démo (persistance à câbler) |
+| `portal-dashboard` | Page d'accueil `/` (« Accueil » du menu) : poste de pilotage du cabinet — bandeau KPI (collecte totale, rétrocessions, clients, allocations), portefeuille clients (donut prospects/actifs/archivés + « prêts à réinvestir »), collecte par fonds, fonds ouverts & performance, performance des conseillers, rétrocessions, conventions, dernières allocations | **hybride** : clients & allocations **réels** (RLS) ; collecte / performance / conseillers / conventions = démo `lib/portal/demo.ts` |
+| `portal-dashboard-charts` | Primitives Recharts du dashboard (registre clair) : `DonutChart` (composition) et `HBarChart` (magnitude/classement) | tokens uniquement ; palette catégorielle = poches data-viz (§2.b), séparation CVD validée + légende/libellés directs systématiques (jamais color-only) |
 
 ---
 

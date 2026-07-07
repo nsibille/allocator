@@ -1,100 +1,54 @@
-import Link from "next/link";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { PageShell } from "@/components/layout/PageShell";
-import { Button } from "@/components/ui/Button";
-import { Eyebrow } from "@/components/ui/Eyebrow";
-import { Stat } from "@/components/ui/Stat";
-import { Badge } from "@/components/ui/Badge";
-import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  DashboardView,
+  type DashboardData,
+} from "@/components/dashboard/DashboardView";
 import { createClient } from "@/lib/supabase/server";
-import { formatEuro } from "@/lib/funds";
-import { ALLOCATION_STATUS, RISK_PROFILE_LABEL } from "@/lib/status";
 
-/** Tableau de bord : KPIs cabinet + liste des allocations (RLS-scopée). */
+/**
+ * Accueil du portail = poste de pilotage du cabinet (portal-dashboard).
+ * Charge les agrégats clients & allocations réels (RLS-scopés) puis délègue le
+ * rendu à `DashboardView`. Le reste des indicateurs (collecte, performance,
+ * conventions) provient du jeu de démonstration `lib/portal/demo.ts`.
+ */
 export default async function DashboardPage() {
   const supabase = await createClient();
-
-  const [{ data: allocations }, { count: clientCount }] = await Promise.all([
+  const [{ data: clientsRaw }, { data: allocationsRaw }] = await Promise.all([
+    supabase.from("clients").select("id, status"),
     supabase
       .from("allocations")
-      .select("id, name, envelope_amount, risk_profile, status, updated_at")
+      .select("id, name, envelope_amount, risk_profile, status, updated_at, client_id")
       .order("updated_at", { ascending: false }),
-    supabase.from("clients").select("id", { count: "exact", head: true }),
   ]);
 
-  const list = allocations ?? [];
-  const isEmpty = list.length === 0;
-  const totalEnvelope = list.reduce(
-    (s, a) => s + Number(a.envelope_amount),
-    0,
+  const clients = clientsRaw ?? [];
+  const allocations = allocationsRaw ?? [];
+
+  const byStatus: Record<string, number> = { prospect: 0, actif: 0, archive: 0 };
+  for (const c of clients) byStatus[c.status] = (byStatus[c.status] ?? 0) + 1;
+
+  // Investisseurs déjà engagés = clients prêts à réinvestir (pipeline de réemploi).
+  const reinvestIds = new Set(
+    allocations
+      .filter((a) => a.status === "subscribed" || a.status === "validated")
+      .map((a) => a.client_id)
+      .filter(Boolean),
   );
 
-  return (
-    <PageShell className="py-14">
-      <Eyebrow>Cabinet</Eyebrow>
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
-        <h1 className="text-[42px] font-medium leading-[46px] tracking-[-0.01em]">
-          Vos <em className="pc">allocations</em>
-        </h1>
-        <Link href="/clients">
-          <Button>Nouvelle allocation</Button>
-        </Link>
-      </div>
+  const data: DashboardData = {
+    clientsCount: clients.length,
+    byStatus,
+    reinvestCount: reinvestIds.size,
+    allocationsCount: allocations.length,
+    proposedCount: allocations.filter((a) => a.status === "proposed").length,
+    recentAllocations: allocations.slice(0, 5).map((a) => ({
+      id: a.id,
+      name: a.name,
+      envelope_amount: a.envelope_amount,
+      risk_profile: a.risk_profile,
+      status: a.status,
+      updated_at: a.updated_at,
+    })),
+  };
 
-      {!isEmpty && (
-        <div className="mt-10 grid grid-cols-2 gap-6 rounded-card border border-black/10 bg-white p-6 md:grid-cols-3">
-          <Stat size="sm" value={String(list.length)} label="Allocations" />
-          <Stat
-            size="sm"
-            value={formatEuro(totalEnvelope)}
-            label="Enveloppes cumulées"
-          />
-          <Stat size="sm" value={String(clientCount ?? 0)} label="Clients" />
-        </div>
-      )}
-
-      {isEmpty ? (
-        <EmptyState
-          className="mt-10"
-          title="Aucune allocation pour l'instant."
-          description="Une allocation se compose depuis la fiche d'un client. Sélectionnez un client pour lancer le funnel de qualification sur la gamme Private Corner."
-          action={
-            <Link href="/clients">
-              <Button>Choisir un client</Button>
-            </Link>
-          }
-        />
-      ) : (
-        <ul className="mt-8 flex flex-col gap-3">
-          {list.map((a) => {
-            const status = ALLOCATION_STATUS[a.status];
-            return (
-              <li key={a.id}>
-                <Link
-                  href={`/allocations/${a.id}`}
-                  className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-black/10 bg-white px-6 py-5 transition-colors hover:border-coral"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium">{a.name}</p>
-                    <p className="mt-0.5 text-[13px] text-muted">
-                      {RISK_PROFILE_LABEL[a.risk_profile] ?? a.risk_profile} ·
-                      modifiée le{" "}
-                      {format(new Date(a.updated_at), "d MMM yyyy", { locale: fr })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-[17px] font-medium tracking-[-0.02em]">
-                      {formatEuro(Number(a.envelope_amount))}
-                    </span>
-                    <Badge tone={status.tone}>{status.label}</Badge>
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </PageShell>
-  );
+  return <DashboardView data={data} />;
 }
