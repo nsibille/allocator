@@ -39,7 +39,7 @@ export default async function FondsPage() {
           Nos fonds ouverts à la <em className="pc">souscription</em>
         </h1>
         <p className="mt-4 text-[17px] leading-[26px] text-slate">
-          Chaque véhicule donne accès, dès 100 000 €, aux stratégies de gérants
+          Chaque véhicule donne accès, dès 25 000 €, aux stratégies de gérants
           institutionnels de premier rang — Ardian, EQT, Tikehau, Blue Owl,
           Keensight, Meridiam ou Mérieux. Selon le fonds : feeder mono-gérant,
           fonds multi-gérants ou fonds secondaire, chacun présenté avec sa

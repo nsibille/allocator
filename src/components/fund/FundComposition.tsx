@@ -1,9 +1,6 @@
 import { formatPercent } from "@/lib/funds";
-import {
-  byWeightDesc,
-  type ExposureSlice,
-  type FundTransparence,
-} from "@/lib/fonds/transparence";
+import { byWeightDesc, type FundTransparence } from "@/lib/fonds/transparence";
+import { ExposureBars } from "./ExposureBars";
 
 /**
  * fund-composition — transparisation d'un fonds (look-through) : architecture
@@ -95,46 +92,10 @@ export function FundComposition({
 
       {/* Expositions en look-through */}
       <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-3">
-        <ExposureBars title="Géographie" slices={t.geography} />
-        <ExposureBars title="Secteur" slices={t.sector} />
-        <ExposureBars title="Stade" slices={t.stage} />
+        <ExposureBars title="Géographie" slices={t.geography} emphasis />
+        <ExposureBars title="Secteur" slices={t.sector} emphasis />
+        <ExposureBars title="Stade" slices={t.stage} emphasis />
       </div>
     </section>
-  );
-}
-
-/** Un axe d'exposition en barres horizontales (poids décroissant). */
-function ExposureBars({
-  title,
-  slices,
-}: {
-  title: string;
-  slices: ExposureSlice[];
-}) {
-  const sorted = byWeightDesc(slices);
-  return (
-    <div>
-      <h3 className="text-[13px] font-medium uppercase tracking-[0.06em] text-slate">
-        {title}
-      </h3>
-      <ul className="mt-4 flex flex-col gap-3">
-        {sorted.map((s) => (
-          <li key={s.label}>
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[13px] text-slate">{s.label}</span>
-              <span className="text-[12px] font-medium tabular-nums text-muted">
-                {formatPercent(s.weight, 0)}
-              </span>
-            </div>
-            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-pill bg-black/10">
-              <div
-                className="h-full rounded-pill bg-coral"
-                style={{ width: `${Math.round(s.weight * 100)}%` }}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }

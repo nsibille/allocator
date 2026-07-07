@@ -212,6 +212,8 @@ Le handoff est pensé pour un site ; voici comment le décliner sur un outil B2B
 | `alloc-vintage-timeline` | Timeline des millésimes | points corail sur emphase |
 | `alloc-fund-picker` | Ajout de fonds | pilules |
 | `alloc-total-indicator` | Total vs enveloppe | écart signalé en corail (pas de rouge/vert) |
+| `alloc-exposure-consolidation` | Exposition consolidée du portefeuille en look-through (géo · secteur · stade), pondérée par le capital, **recalculée en temps réel** à chaque ajustement de la répartition | réutilise `fund-exposure-bars` ; logique `lib/allocation/exposure.ts` ; aussi dans la note PDF |
+| `fund-exposure-bars` | Un axe d'exposition en barres horizontales corail (poids décroissant), présentation pure | partagé fiche fonds ↔ éditeur |
 
 ### `proj`
 | Slug | Rôle | Notes |

@@ -218,7 +218,7 @@ const COMMERCIAL_COPY: Record<
   "european-midmarket-opportunities": {
     tagline: "Le mid-market européen, multi-gérants",
     pitch:
-      "European MidMarket Opportunities est un fonds multi-gérants réunissant, dès 100 000 €, les meilleures signatures du buyout mid-market européen — PAI Partners, Keensight Capital, Eurazeo et General Atlantic — dans un seul véhicule diversifié. Une brique cœur de portefeuille clé en main.",
+      "European MidMarket Opportunities est un fonds multi-gérants réunissant, dès 25 000 €, les meilleures signatures du buyout mid-market européen — PAI Partners, Keensight Capital, Eurazeo et General Atlantic — dans un seul véhicule diversifié. Ticket d'entrée abaissé pour une brique cœur de portefeuille clé en main.",
     strategy: [
       "Fonds multi-gérants du mid-market européen",
       "PAI Partners, Keensight Capital, Eurazeo, General Atlantic",
