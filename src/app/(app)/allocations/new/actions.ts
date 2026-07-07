@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { logClientEvent } from "@/lib/client/log-event";
 import { buildAllocation } from "@/lib/allocation/engine";
 import type { AllocationInput, Fund } from "@/types/domain";
 
@@ -146,6 +147,16 @@ export async function createAllocation(
   );
   if (linesError) {
     return { error: "Échec de l'enregistrement des lignes d'allocation." };
+  }
+
+  if (clientId) {
+    await logClientEvent(supabase, {
+      clientId,
+      cabinetId: profile.cabinet_id,
+      type: "proposal_created",
+      title: `Allocation ${p.clientReference}`,
+      data: { amount: p.envelope, allocation_id: allocation.id },
+    });
   }
 
   redirect(`/allocations/${allocation.id}`);

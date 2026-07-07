@@ -9,12 +9,16 @@ export type AllocationStatus = Database["public"]["Enums"]["allocation_status"];
 export type BulletinStatus = Database["public"]["Enums"]["bulletin_status"];
 export type ClientStatus = Database["public"]["Enums"]["client_status"];
 export type DocumentStatus = Database["public"]["Enums"]["document_status"];
+export type ClientEventType = Database["public"]["Enums"]["client_event_type"];
+export type EventActor = Database["public"]["Enums"]["event_actor"];
 
 export type Fund = Database["public"]["Tables"]["funds"]["Row"];
 export type AllocationRow = Database["public"]["Tables"]["allocations"]["Row"];
 export type ClientRow = Database["public"]["Tables"]["clients"]["Row"];
 export type ClientDocumentRow =
   Database["public"]["Tables"]["client_documents"]["Row"];
+export type ClientEventRow =
+  Database["public"]["Tables"]["client_events"]["Row"];
 
 /**
  * Réponses d'un questionnaire de qualification (KYC, adéquation, ESG, fiscalité).

@@ -6,13 +6,18 @@ import { createClient } from "@/lib/supabase/server";
 import {
   clientIdentitySchema,
   documentSchema,
+  manualEventSchema,
   questionnaireSchema,
   type ClientIdentityInput,
   type DocumentInput,
+  type ManualEventInput,
   type QuestionnaireInput,
 } from "@/lib/client/schema";
+import { logClientEvent } from "@/lib/client/log-event";
+import { EVENT_TYPES } from "@/lib/client/events.config";
+import { QUESTIONNAIRES } from "@/lib/client/questionnaires.config";
 import type { ClientStatus } from "@/types/domain";
-import type { TablesUpdate } from "@/types/database.types";
+import type { Json, TablesUpdate } from "@/types/database.types";
 
 /* Server Actions — administration des clients (client-first). */
 
@@ -96,6 +101,13 @@ export async function createInvestor(
     return { error: "Échec de la création du client." };
   }
 
+  await logClientEvent(ctx.supabase, {
+    clientId: client.id,
+    cabinetId: ctx.cabinetId,
+    type: "client_created",
+    title: p.reference?.trim() || autoReference(p),
+  });
+
   revalidatePath("/clients");
   redirect(`/clients/${client.id}`);
 }
@@ -134,6 +146,12 @@ export async function updateInvestorIdentity(
 
   if (error) return { error: "Échec de la mise à jour du client." };
 
+  await logClientEvent(ctx.supabase, {
+    clientId: id,
+    cabinetId: ctx.cabinetId,
+    type: "profile_updated",
+  });
+
   revalidatePath(`/clients/${id}`);
   revalidatePath("/clients");
   redirect(`/clients/${id}`);
@@ -167,6 +185,14 @@ export async function saveQuestionnaire(
 
   if (error) return { error: "Échec de l'enregistrement du questionnaire." };
 
+  await logClientEvent(ctx.supabase, {
+    clientId,
+    cabinetId: ctx.cabinetId,
+    type: "questionnaire_updated",
+    title: QUESTIONNAIRES[kind].title,
+    data: { kind },
+  });
+
   revalidatePath(`/clients/${clientId}`);
   return { ok: true };
 }
@@ -184,6 +210,13 @@ export async function setClientStatus(
     .update({ status })
     .eq("id", id);
   if (error) return { error: "Échec du changement de statut." };
+
+  await logClientEvent(ctx.supabase, {
+    clientId: id,
+    cabinetId: ctx.cabinetId,
+    type: "status_changed",
+    data: { status },
+  });
 
   revalidatePath(`/clients/${id}`);
   revalidatePath("/clients");
@@ -226,6 +259,14 @@ export async function addDocument(
   });
   if (error) return { error: "Échec de l'ajout du document." };
 
+  await logClientEvent(ctx.supabase, {
+    clientId,
+    cabinetId: ctx.cabinetId,
+    type: "document_added",
+    title: parsed.data.name,
+    data: { doc_type: parsed.data.doc_type, status: parsed.data.status },
+  });
+
   revalidatePath(`/clients/${clientId}`);
   return { ok: true };
 }
@@ -253,6 +294,63 @@ export async function updateDocument(
     })
     .eq("id", documentId);
   if (error) return { error: "Échec de la mise à jour du document." };
+
+  await logClientEvent(ctx.supabase, {
+    clientId,
+    cabinetId: ctx.cabinetId,
+    type: "document_updated",
+    title: parsed.data.name,
+    data: { status: parsed.data.status },
+  });
+
+  revalidatePath(`/clients/${clientId}`);
+  return { ok: true };
+}
+
+/** Journalise un événement saisi manuellement par le CGP (note, appel, RDV…). */
+export async function logManualEvent(
+  clientId: string,
+  raw: ManualEventInput,
+): Promise<ActionError | { ok: true }> {
+  const parsed = manualEventSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Événement invalide." };
+  }
+  const ctx = await requireCabinet();
+  if (!ctx.ok) return { error: ctx.error };
+
+  const { type, title, body, occurred_at, amount, state } = parsed.data;
+  const data: Record<string, Json> = {};
+  if (amount != null) data.amount = amount;
+  if (state) data.state = state;
+
+  await logClientEvent(ctx.supabase, {
+    clientId,
+    cabinetId: ctx.cabinetId,
+    type,
+    title,
+    body,
+    occurredAt: occurred_at,
+    data,
+  });
+
+  revalidatePath(`/clients/${clientId}`);
+  return { ok: true };
+}
+
+/** Supprime un événement de la timeline. */
+export async function deleteEvent(
+  clientId: string,
+  eventId: string,
+): Promise<ActionError | { ok: true }> {
+  const ctx = await requireCabinet();
+  if (!ctx.ok) return { error: ctx.error };
+
+  const { error } = await ctx.supabase
+    .from("client_events")
+    .delete()
+    .eq("id", eventId);
+  if (error) return { error: "Échec de la suppression de l'événement." };
 
   revalidatePath(`/clients/${clientId}`);
   return { ok: true };

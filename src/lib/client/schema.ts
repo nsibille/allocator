@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Constants } from "@/types/database.types";
 
 /* Validation Zod des formulaires clients (identité) + garde-fous questionnaires. */
 
@@ -86,3 +87,34 @@ export const documentSchema = z.object({
 });
 
 export type DocumentInput = z.infer<typeof documentSchema>;
+
+/** Saisie manuelle d'un événement de timeline par le CGP. */
+export const manualEventSchema = z.object({
+  type: z.enum(Constants.public.Enums.client_event_type),
+  title: optionalText,
+  body: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .transform((v) => (v ? v : null)),
+  occurred_at: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+  amount: z
+    .number()
+    .nonnegative()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  state: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((v) => (v ? v : null)),
+});
+
+export type ManualEventInput = z.input<typeof manualEventSchema>;

@@ -9,6 +9,7 @@ import type {
   AllocationStatus,
   BulletinStatus,
   ClientDocumentRow,
+  ClientEventRow,
   ClientRow,
 } from "@/types/domain";
 
@@ -28,26 +29,35 @@ export default async function ClientDetailPage({
     .single();
   if (!client) notFound();
 
-  const [{ data: documents }, { data: allocations }, { data: subs }] =
-    await Promise.all([
-      supabase
-        .from("client_documents")
-        .select("*")
-        .eq("client_id", id)
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("allocations")
-        .select("id, name, envelope_amount, risk_profile, status, updated_at")
-        .eq("client_id", id)
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("subscriptions")
-        .select(
-          "id, reference, amount, status, generated_at, funds(name), allocations!inner(client_id)",
-        )
-        .eq("allocations.client_id", id)
-        .order("generated_at", { ascending: true }),
-    ]);
+  const [
+    { data: documents },
+    { data: allocations },
+    { data: subs },
+    { data: events },
+  ] = await Promise.all([
+    supabase
+      .from("client_documents")
+      .select("*")
+      .eq("client_id", id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("allocations")
+      .select("id, name, envelope_amount, risk_profile, status, updated_at")
+      .eq("client_id", id)
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("subscriptions")
+      .select(
+        "id, reference, amount, status, generated_at, funds(name), allocations!inner(client_id)",
+      )
+      .eq("allocations.client_id", id)
+      .order("generated_at", { ascending: true }),
+    supabase
+      .from("client_events")
+      .select("*")
+      .eq("client_id", id)
+      .order("occurred_at", { ascending: false }),
+  ]);
 
   const leads: ClientLead[] = (allocations ?? []).map((a) => ({
     id: a.id,
@@ -76,6 +86,7 @@ export default async function ClientDetailPage({
       documents={(documents ?? []) as ClientDocumentRow[]}
       leads={leads}
       subscriptions={subscriptions}
+      events={(events ?? []) as ClientEventRow[]}
     />
   );
 }

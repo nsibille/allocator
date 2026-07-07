@@ -204,6 +204,60 @@ export type Database = {
           },
         ]
       }
+      client_events: {
+        Row: {
+          actor: Database["public"]["Enums"]["event_actor"]
+          body: string | null
+          cabinet_id: string
+          client_id: string
+          created_at: string
+          data: Json
+          id: string
+          occurred_at: string
+          title: string | null
+          type: Database["public"]["Enums"]["client_event_type"]
+        }
+        Insert: {
+          actor?: Database["public"]["Enums"]["event_actor"]
+          body?: string | null
+          cabinet_id: string
+          client_id: string
+          created_at?: string
+          data?: Json
+          id?: string
+          occurred_at?: string
+          title?: string | null
+          type: Database["public"]["Enums"]["client_event_type"]
+        }
+        Update: {
+          actor?: Database["public"]["Enums"]["event_actor"]
+          body?: string | null
+          cabinet_id?: string
+          client_id?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          occurred_at?: string
+          title?: string | null
+          type?: Database["public"]["Enums"]["client_event_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_events_cabinet_id_fkey"
+            columns: ["cabinet_id"]
+            isOneToOne: false
+            referencedRelation: "cabinets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -463,8 +517,33 @@ export type Database = {
         | "archived"
       app_role: "conseiller" | "admin"
       bulletin_status: "generated" | "sent" | "signed" | "received"
+      client_event_type:
+        | "client_created"
+        | "login"
+        | "fund_viewed"
+        | "document_viewed"
+        | "document_downloaded"
+        | "document_added"
+        | "document_updated"
+        | "proposal_created"
+        | "proposal_sent"
+        | "proposal_viewed"
+        | "questionnaire_updated"
+        | "profile_updated"
+        | "status_changed"
+        | "contact_added"
+        | "phone_call"
+        | "meeting"
+        | "email"
+        | "note"
+        | "subscription_created"
+        | "subscription_signed"
+        | "capital_call"
+        | "distribution"
+        | "other"
       client_status: "prospect" | "actif" | "archive"
       document_status: "manquant" | "recu" | "valide" | "expire"
+      event_actor: "conseiller" | "client" | "systeme"
       pacing_profile:
         | "buyout"
         | "growth"
@@ -611,8 +690,34 @@ export const Constants = {
       ],
       app_role: ["conseiller", "admin"],
       bulletin_status: ["generated", "sent", "signed", "received"],
+      client_event_type: [
+        "client_created",
+        "login",
+        "fund_viewed",
+        "document_viewed",
+        "document_downloaded",
+        "document_added",
+        "document_updated",
+        "proposal_created",
+        "proposal_sent",
+        "proposal_viewed",
+        "questionnaire_updated",
+        "profile_updated",
+        "status_changed",
+        "contact_added",
+        "phone_call",
+        "meeting",
+        "email",
+        "note",
+        "subscription_created",
+        "subscription_signed",
+        "capital_call",
+        "distribution",
+        "other",
+      ],
       client_status: ["prospect", "actif", "archive"],
       document_status: ["manquant", "recu", "valide", "expire"],
+      event_actor: ["conseiller", "client", "systeme"],
       pacing_profile: [
         "buyout",
         "growth",

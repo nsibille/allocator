@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { QuestionnaireForm } from "./QuestionnaireForm";
 import { DocumentsChecklist } from "./DocumentsChecklist";
+import { ClientTimeline } from "./ClientTimeline";
 import { deleteInvestor, setClientStatus } from "@/app/(app)/clients/actions";
 import {
   QUESTIONNAIRES,
@@ -28,6 +29,7 @@ import type {
   AllocationStatus,
   BulletinStatus,
   ClientDocumentRow,
+  ClientEventRow,
   ClientRow,
   ClientStatus,
   QuestionnaireAnswers,
@@ -51,10 +53,17 @@ export type ClientSubscription = {
   fund_name: string | null;
 };
 
-type TabKey = "profil" | "qualification" | "documents" | "souscriptions" | "pistes";
+type TabKey =
+  | "profil"
+  | "activite"
+  | "qualification"
+  | "documents"
+  | "souscriptions"
+  | "pistes";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "profil", label: "Profil" },
+  { key: "activite", label: "Activité" },
   { key: "qualification", label: "Qualification" },
   { key: "documents", label: "Documents" },
   { key: "souscriptions", label: "Souscriptions" },
@@ -70,11 +79,13 @@ export function ClientDetail({
   documents,
   leads,
   subscriptions,
+  events,
 }: {
   client: ClientRow;
   documents: ClientDocumentRow[];
   leads: ClientLead[];
   subscriptions: ClientSubscription[];
+  events: ClientEventRow[];
 }) {
   const [tab, setTab] = useState<TabKey>("profil");
 
@@ -174,6 +185,9 @@ export function ClientDetail({
       <div className="mt-8">
         {tab === "profil" && (
           <ProfilTab client={client} fullName={fullName} />
+        )}
+        {tab === "activite" && (
+          <ClientTimeline clientId={client.id} events={events} />
         )}
         {tab === "qualification" && (
           <div className="flex flex-col gap-6">
